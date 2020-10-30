@@ -12,10 +12,10 @@ public class LoginActivity extends AppCompatActivity {
     public static final String EXTRA_ACCOUNT_USERNAME = "com.example.teamproject.ACCOUNT_USER";
     public static final String EXTRA_ACCOUNT_TYPE = "com.example.teamproject.ACCOUNT_TYPE";
 
-    Button ButtonLogin, ButtonRegister;
-    EditText EditTextUserName, EditTextUserPassword;
-    String[] TestAccount = {"test", "test1234"};
-    String[] AdminAccount = {"admin", "project11"};
+    private Button ButtonLogin, ButtonRegister;
+    private EditText EditTextUserName, EditTextUserPassword;
+    static String[] TestAccount = {"test", "test1234"};
+    static String[] AdminAccount = {"admin", "project11"};
     String[] AccountType = {"standard", "admin"};
     private String username = "", password = "",
             accountType = "unknown", accountUser = "";

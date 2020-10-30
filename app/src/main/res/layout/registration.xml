@@ -43,7 +43,7 @@
         android:fontFamily="@font/days_one"
         android:hint="@string/login_username_hint"
         android:inputType="textPersonName"
-        android:textColor="#000000"
+        android:textColor="#009688"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_register_username" />
 
@@ -54,7 +54,7 @@
         android:enabled="false"
         android:fontFamily="@font/days_one"
         android:text="Username is already taken!"
-        android:textColor="#FF0000"
+        android:textColor="#FFFFFF"
         android:textSize="10sp"
         app:layout_constraintStart_toStartOf="@+id/editTextRegisterUsername"
         app:layout_constraintTop_toBottomOf="@+id/editTextRegisterUsername" />
@@ -80,7 +80,7 @@
         android:fontFamily="@font/days_one"
         android:hint="@string/login_password_hint"
         android:inputType="textPassword"
-        android:textColor="#000000"
+        android:textColor="#009688"
         app:layout_constraintStart_toStartOf="@+id/editTextRegisterUsername"
         app:layout_constraintTop_toBottomOf="@+id/tv_register_password" />
 
@@ -91,7 +91,7 @@
         android:enabled="false"
         android:fontFamily="@font/days_one"
         android:text="Password must be atleast 6 characters!"
-        android:textColor="#FF0000"
+        android:textColor="#FFFFFF"
         android:textSize="10sp"
         app:layout_constraintStart_toStartOf="@+id/editTextRegisterPassword"
         app:layout_constraintTop_toBottomOf="@+id/editTextRegisterPassword" />
@@ -115,7 +115,7 @@
         android:enabled="false"
         android:fontFamily="@font/days_one"
         android:text="Password don't match!"
-        android:textColor="#FF0000"
+        android:textColor="#FFFFFF"
         android:textSize="10sp"
         app:layout_constraintStart_toStartOf="@+id/editTextRegisterConfirmPassword"
         app:layout_constraintTop_toBottomOf="@+id/editTextRegisterConfirmPassword" />
@@ -129,7 +129,7 @@
         android:fontFamily="@font/days_one"
         android:hint="@string/login_password_hint"
         android:inputType="textPassword"
-        android:textColor="#000000"
+        android:textColor="#009688"
         app:layout_constraintStart_toStartOf="@+id/editTextRegisterUsername"
         app:layout_constraintTop_toBottomOf="@+id/tv_register_confirmpassword" />
 
@@ -168,7 +168,7 @@
         android:fontFamily="@font/days_one"
         android:hint="@string/registration_name"
         android:inputType="textPersonName"
-        android:textColor="#000000"
+        android:textColor="#009688"
         android:textSize="15sp"
         app:layout_constraintStart_toStartOf="@+id/editTextRegisterUsername"
         app:layout_constraintTop_toBottomOf="@+id/tv_register_full_name" />
@@ -194,7 +194,7 @@
         android:fontFamily="@font/days_one"
         android:hint="@string/registration_credentials"
         android:inputType="textPersonName"
-        android:textColor="#000000"
+        android:textColor="#009688"
         android:textSize="12sp"
         app:layout_constraintStart_toStartOf="@+id/editTextRegisterFullName"
         app:layout_constraintTop_toBottomOf="@+id/tv_register_credentials" />
