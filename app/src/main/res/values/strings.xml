@@ -11,4 +11,9 @@
     <string name="registration_name">John Doe</string>
     <string name="registration_credentials">Senior Software Engineer, Student</string>
     <string name="button_registration">Registration</string>
+    <string name="profile_msg">User Profile</string>
+    <string name="profile_name">John Doe</string>
+    <string name="profile_username">johndoe</string>
+    <string name="profile_credentials">Student at SJSU</string>
+    <string name="profile_save_changes">Save Changes</string>
 </resources>
