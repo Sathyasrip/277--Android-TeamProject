@@ -1,3 +1,14 @@
 <resources>
-    <string name="app_name">TeamProject</string>
+    <string name="app_name">CritiQue</string>
+    <string name="login_app_name">CritiQue</string>
+    <string name="button_login">Login</string>
+    <string name="button_register">Register</string>
+    <string name="login_welcome_msg_1">Hi there,</string>
+    <string name="login_welcome_msg_2">welcome back!</string>
+    <string name="login_username_hint">johndoe</string>
+    <string name="login_password_hint">password</string>
+    <string name="registration_msg">User Registration</string>
+    <string name="registration_name">John Doe</string>
+    <string name="registration_credentials">Senior Software Engineer, Student</string>
+    <string name="button_registration">Registration</string>
 </resources>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <Button
+        android:id="@+id/button_userprofile"
+        style="@android:style/Widget.Button"
+        android:layout_width="200sp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="70dp"
+        android:fontFamily="@font/days_one"
+        android:text="User Profile"
+        android:textAllCaps="false"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/button_offline_demo"
+        style="@android:style/Widget.Button"
+        android:layout_width="200sp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:fontFamily="@font/days_one"
+        android:text="Offline Demo"
+        android:textAllCaps="false"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@+id/button_userprofile"
+        app:layout_constraintStart_toStartOf="@+id/button_userprofile"
+        app:layout_constraintTop_toBottomOf="@+id/button_userprofile" />
+
+    <Button
+        android:id="@+id/button_cloud_demo"
+        style="@android:style/Widget.Button"
+        android:layout_width="200sp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:enabled="false"
+        android:fontFamily="@font/days_one"
+        android:text="Cloud Demo"
+        android:textAllCaps="false"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@+id/button_userprofile"
+        app:layout_constraintStart_toStartOf="@+id/button_userprofile"
+        app:layout_constraintTop_toBottomOf="@+id/button_offline_demo" />
+
+    <Button
+        android:id="@+id/button_logout"
+        style="@android:style/Widget.Button"
+        android:layout_width="200sp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:fontFamily="@font/days_one"
+        android:text="Logout"
+        android:textAllCaps="false"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@+id/button_userprofile"
+        app:layout_constraintStart_toStartOf="@+id/button_userprofile"
+        app:layout_constraintTop_toBottomOf="@+id/button_cloud_demo" />
+
+    <Button
+        android:id="@+id/button_administration"
+        style="@android:style/Widget.Button"
+        android:layout_width="200sp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:enabled="false"
+        android:fontFamily="@font/days_one"
+        android:text="Administration"
+        android:textAllCaps="false"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="@+id/button_userprofile"
+        app:layout_constraintStart_toStartOf="@+id/button_userprofile"
+        app:layout_constraintTop_toBottomOf="@+id/button_logout" />
+</androidx.constraintlayout.widget.ConstraintLayout>
