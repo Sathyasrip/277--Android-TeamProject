@@ -16,4 +16,11 @@
     <string name="profile_username">johndoe</string>
     <string name="profile_credentials">Student at SJSU</string>
     <string name="profile_save_changes">Save Changes</string>
+    <string name="view_tab">View</string>
+    <string name="comments_tab">Comments</string>
+    <string name="project_title">IEEE Article</string>
+    <string name="version_prompt">Document Version</string>
+    <string name="button_save_document">Save Changes</string>
+    <string name="demo_title">Review Portal</string>
+
 </resources>

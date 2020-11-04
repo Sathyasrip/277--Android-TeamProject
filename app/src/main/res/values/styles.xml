@@ -7,4 +7,12 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="PDFTronTheme" parent="CustomAppThemeBase">
+        <item name="colorPrimary">#3F51B5</item>
+        <item name="colorPrimaryDark">#303F9F</item>
+        <item name="colorAccent">#FF4081</item>
+        <!-- Action bar -->
+        <item name="actionModeBackground">?attr/colorPrimary</item>
+        <item name="windowActionModeOverlay">true</item>
+    </style>
 </resources>

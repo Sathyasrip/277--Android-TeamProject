@@ -10,8 +10,12 @@ android {
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        // ***** Required for PDFTron. ****
+        multiDexEnabled true
+        vectorDrawables.useSupportLibrary = true
+        manifestPlaceholders = [pdftronLicenseKey:PDFTRON_LICENSE_KEY]
     }
 
     buildTypes {
@@ -26,6 +30,18 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+
+    // ***** TabLayout and ViewPager dependencies. ****
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:support-v4:27.1.1'
+    implementation 'com.android.support:design:27.1.1'
+
+    // ***** PDFTron dependencies ****
+    implementation "com.pdftron:pdftron:8.0.1"
+    implementation "com.pdftron:tools:8.0.1"
+    implementation 'androidx.multidex:multidex:2.0.1'
+
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
