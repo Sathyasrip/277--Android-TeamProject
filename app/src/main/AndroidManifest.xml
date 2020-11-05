@@ -27,6 +27,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- Probably remove DebugMenuActivity from the final build. -->
         <activity
             android:name=".DebugMenuActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar">
