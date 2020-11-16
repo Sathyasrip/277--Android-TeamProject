@@ -29,10 +29,10 @@ public class ReviewActivity extends AppCompatActivity {
         setContentView(R.layout.activity_review);
 
         /***************************************************************
-         *  Configure the spinner to show all versions of the Review
+         *  Configure the dropdown to show all versions of the Review
          ***************************************************************/
         version_dropdown = (Spinner) findViewById(R.id.version_dropdown);
-        ArrayAdapter<String> adpter = new ArrayAdapter<String> (ReviewActivity.this, R.layout.spinner, sample_versions);
+        ArrayAdapter<String> adpter = new ArrayAdapter<String> (ReviewActivity.this, R.layout.review_spinner, sample_versions);
         version_dropdown.setAdapter(adpter);
 
         /**************************************************************************************

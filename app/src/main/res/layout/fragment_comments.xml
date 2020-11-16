@@ -8,6 +8,8 @@
         android:id="@+id/listview_comments"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
+        android:background="#CCFFFFFF"
+        android:divider="@null"
         android:dividerHeight="1dp"
         android:footerDividersEnabled="false"
         android:headerDividersEnabled="false"

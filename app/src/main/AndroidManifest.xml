@@ -16,19 +16,19 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-
         <!-- All of our app activities for our application -->
         <activity
             android:name=".ui.SplashScreen"
             android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".ui.LoginScreen"
-            android:theme="@style/Theme.AppCompat.NoActionBar"/>
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
             android:name=".ui.NewRegistration"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
@@ -38,6 +38,9 @@
         <activity
             android:name=".ui.UserPortal"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
+        <activity
+            android:name=".ui.DeletingReview"
+            android:theme="@style/Theme.AppCompat.NoActionBar"/>
         <activity
             android:name=".ui.ReviewActivity"
             android:theme="@style/CustomAppTheme"
