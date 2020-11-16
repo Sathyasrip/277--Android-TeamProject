@@ -1,5 +1,5 @@
 # Acadamia
-###An app where researchers or their ilk can peer-review professional papers on the go.
+An app where researchers or their ilk can peer-review professional papers on the go.
 
 ## Building the project
 Make sure to first download and install the latest version of Android Studio, found [here](https://developer.android.com/studio/?gclid=Cj0KCQiA48j9BRC-ARIsAMQu3WQyjDK8mCnRvmxIgKQhraBXtx_VKZod_fwn0J32Dpkt5-7aCE-zCNkaAojSEALw_wcB&gclsrc=aw.ds)
