@@ -61,10 +61,10 @@
     
 
   <link rel="assets" href="https://github.githubassets.com/">
-    <link rel="shared-web-socket" href="wss://alive.github.com/_sockets/u/73623815/ws?session=eyJ2IjoiVjMiLCJ1Ijo3MzYyMzgxNSwicyI6NjAxMzQxNjA1LCJjIjoyMTk0Mzk2NzgxLCJ0IjoxNjA1NTM1NjQ0fQ==--b4b9fe87890568e39911f5b140b4f68e138efdfae41bc62439f77da829ffca0e" data-refresh-url="/_alive">
+    <link rel="shared-web-socket" href="wss://alive.github.com/_sockets/u/73623815/ws?session=eyJ2IjoiVjMiLCJ1Ijo3MzYyMzgxNSwicyI6NjAxMzQxNjA1LCJjIjoyMTk2MDQ5MDc5LCJ0IjoxNjA1NTM1Nzc1fQ==--cd9bb42288d941cb457b1b45d801a8e080a5b9e61a03553166d7ab79beaa3238" data-refresh-url="/_alive">
   <link rel="sudo-modal" href="/sessions/sudo_modal">
 
-  <meta name="request-id" content="F327:6139:C60E70:111C5C9:5FB2879B" data-pjax-transient="true" /><meta name="html-safe-nonce" content="de2aea671ae3290ca1353949c6aab9c626620ccb3ba1a76dd8795370615d9858" data-pjax-transient="true" /><meta name="visitor-payload" content="eyJyZWZlcnJlciI6Imh0dHBzOi8vZ2l0aHViLmNvbS9TYXRoeWFzcmlwLzI3Ny0tQW5kcm9pZC1UZWFtUHJvamVjdCIsInJlcXVlc3RfaWQiOiJGMzI3OjYxMzk6QzYwRTcwOjExMUM1Qzk6NUZCMjg3OUIiLCJ2aXNpdG9yX2lkIjoiNjQxODU3NTQ5Mjk4MjQxODE0MiIsInJlZ2lvbl9lZGdlIjoic2VhIiwicmVnaW9uX3JlbmRlciI6ImlhZCJ9" data-pjax-transient="true" /><meta name="visitor-hmac" content="8e4d0ceb691883a6ff55e78a73335b9b24143021a887e685d70e647d77cc3e70" data-pjax-transient="true" /><meta name="cookie-consent-required" content="false" />
+  <meta name="request-id" content="F345:3E66:958E27:CCB60B:5FB287EE" data-pjax-transient="true" /><meta name="html-safe-nonce" content="de2aea671ae3290ca1353949c6aab9c626620ccb3ba1a76dd8795370615d9858" data-pjax-transient="true" /><meta name="visitor-payload" content="eyJyZWZlcnJlciI6Imh0dHBzOi8vZ2l0aHViLmNvbS9TYXRoeWFzcmlwLzI3Ny0tQW5kcm9pZC1UZWFtUHJvamVjdCIsInJlcXVlc3RfaWQiOiJGMzQ1OjNFNjY6OTU4RTI3OkNDQjYwQjo1RkIyODdFRSIsInZpc2l0b3JfaWQiOiI2NDE4NTc1NDkyOTgyNDE4MTQyIiwicmVnaW9uX2VkZ2UiOiJzZWEiLCJyZWdpb25fcmVuZGVyIjoiaWFkIn0=" data-pjax-transient="true" /><meta name="visitor-hmac" content="f0347788952a386b4a48dc507e26a3242fd8f7ab9dd131c117d103a45dce3919" data-pjax-transient="true" /><meta name="cookie-consent-required" content="false" />
 
     <meta name="hovercard-subject-tag" content="repository:307199584" data-pjax-transient>
 
@@ -103,7 +103,7 @@
 
       <meta name="expected-hostname" content="github.com">
 
-      <meta name="js-proxy-site-detection-payload" content="ZTI3ZDQ5ZDg5OGQyOTIyMmU3ZmU0ZjM1ZmU0NWU2NGE4OTVkZmFhNTc1YzI0MjlkMjA5MGMwZmRjZDI1ZjM3Y3x7InJlbW90ZV9hZGRyZXNzIjoiNzMuMTcwLjIxNy4xNjciLCJyZXF1ZXN0X2lkIjoiRjMyNzo2MTM5OkM2MEU3MDoxMTFDNUM5OjVGQjI4NzlCIiwidGltZXN0YW1wIjoxNjA1NTM1NjQ0LCJob3N0IjoiZ2l0aHViLmNvbSJ9">
+      <meta name="js-proxy-site-detection-payload" content="YjUyNjYzMmQ4MGRiZTI1MmEzZDk1ZTM1NTM1YTg1OWEyMjc0MmU5NGE0MDI4Yjg4NmE3NzYzYjAzYTllMjk4Nnx7InJlbW90ZV9hZGRyZXNzIjoiNzMuMTcwLjIxNy4xNjciLCJyZXF1ZXN0X2lkIjoiRjM0NTozRTY2Ojk1OEUyNzpDQ0I2MEI6NUZCMjg3RUUiLCJ0aW1lc3RhbXAiOjE2MDU1MzU3NzUsImhvc3QiOiJnaXRodWIuY29tIn0=">
 
     <meta name="enabled-features" content="MARKETPLACE_PENDING_INSTALLATIONS,JS_HTTP_CACHE_HEADERS">
 
@@ -190,7 +190,7 @@
           spellcheck="false"
           autocomplete="off"
           >
-          <input type="hidden" value="vSHboytmNV42wPtx7B/jLG3l8cmxpqGGlMV6PmPIXupcLVazajQKQ5FjF2SlfvxWoNyHtJa+f+os1Zq/D5PcFw==" data-csrf="true" class="js-data-jump-to-suggestions-path-csrf" />
+          <input type="hidden" value="Os2rMYd9oVs0MdRffOSKiIb3Ln1xaK1XA1yT5RogB9fbwSYhxi+eRpOSOEo1hZXyS85YAFZwczu7THNkdnuFKg==" data-csrf="true" class="js-data-jump-to-suggestions-path-csrf" />
           <input type="hidden" class="js-site-search-type-field" name="type" >
             <img src="https://github.githubassets.com/images/search-key-slash.svg" alt="" class="mr-2 header-search-key-slash">
 
@@ -340,7 +340,7 @@
       <img class="avatar avatar-user" src="https://avatars3.githubusercontent.com/u/73623815?s=40&amp;v=4" width="20" height="20" alt="@HisaamH" />
       HisaamH
 </a>
-    <!-- '"` --><!-- </textarea></xmp> --></option></form><form action="/logout" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="jiiyZpTjna3NEudr+WW1N6jJrpWw/Fp/hRHvpxevQIJtRYR10/6q+EHh918q//v2ZwFTnHeQpJeO9MLsgrZBJg==" />
+    <!-- '"` --><!-- </textarea></xmp> --></option></form><form action="/logout" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="/XEiYJJv6jXHZUoI9AaPOL3EyFZBA/oZvSQCBw+2z8keHBRz1XLdYEuWWjwnnMH5cgw1X4ZvBPG2wS9Mmq/ObQ==" />
       <button type="submit" class="Header-link mr-0 mr-md-3 py-2 py-md-3 border-top border-md-top-0 border-white-fade-15 d-md-none btn-link d-block width-full text-left" data-ga-click="Header, sign out, icon:logout" style="padding-left: 2px;">
         <svg class="octicon octicon-sign-out v-align-middle" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M2 2.75C2 1.784 2.784 1 3.75 1h2.5a.75.75 0 010 1.5h-2.5a.25.25 0 00-.25.25v10.5c0 .138.112.25.25.25h2.5a.75.75 0 010 1.5h-2.5A1.75 1.75 0 012 13.25V2.75zm10.44 4.5H6.75a.75.75 0 000 1.5h5.69l-1.97 1.97a.75.75 0 101.06 1.06l3.25-3.25a.75.75 0 000-1.06l-3.25-3.25a.75.75 0 10-1.06 1.06l1.97 1.97z"></path></svg>
         Sign out
@@ -360,7 +360,7 @@
     <div class="Header-item mr-0 mr-md-3 flex-order-1 flex-md-order-none">
       
 
-    <notification-indicator class="js-socket-channel" data-channel="eyJjIjoibm90aWZpY2F0aW9uLWNoYW5nZWQ6NzM2MjM4MTUiLCJ0IjoxNjA1NTM1NjQ0fQ==--eca4bc09f0cea81b982426b7ef169fb47fd0864d5ce5802627ab62f907a16a6e">
+    <notification-indicator class="js-socket-channel" data-channel="eyJjIjoibm90aWZpY2F0aW9uLWNoYW5nZWQ6NzM2MjM4MTUiLCJ0IjoxNjA1NTM1Nzc1fQ==--c0043ddcdf3a2aa0386ec60f3792b6bf5a7df96962a1d715821e029bc940cd04">
       <a href="/notifications"
          class="Header-link notification-indicator position-relative tooltipped tooltipped-sw"
          
@@ -505,7 +505,7 @@
       </p>
       <a class="btn btn-primary shelf-cta" target="_blank" data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;READ_GUIDE&quot;,&quot;repository_id&quot;:307199584,&quot;originating_url&quot;:&quot;https://github.com/Sathyasrip/277--Android-TeamProject/blob/main/README.md&quot;,&quot;user_id&quot;:73623815}}" data-hydro-click-hmac="6805b007bfd35b892227ea4fdf01ea52d05b54e173721c4da43aee41d374544a" href="https://guides.github.com/activities/hello-world/">Read the guide</a>
     </div>
-    <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="shelf-dismiss js-notice-dismiss" action="/dashboard/dismiss_bootcamp" accept-charset="UTF-8" method="post"><input type="hidden" name="_method" value="delete" /><input type="hidden" name="authenticity_token" value="6IpCBsJkKm9sr3MChC7IMUn3+EZ5dTejrwQU4sJTqXFfOVmmBUcr01KQu+/xPVBGwgwPyOpKHTcvKvALAOwo0A==" />
+    <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="shelf-dismiss js-notice-dismiss" action="/dashboard/dismiss_bootcamp" accept-charset="UTF-8" method="post"><input type="hidden" name="_method" value="delete" /><input type="hidden" name="authenticity_token" value="lBDxBhRztexWFJ9p5UPHdYFkuFS68Np/GzdDiwThbl8jo+qm01C0UGgrV4SQUF8CCp9P2inP8OubGadixl7v/g==" />
       <button name="button" type="submit" class="mr-1 close-button tooltipped tooltipped-w" aria-label="Hide this notice forever" data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;DISMISS_BANNER&quot;,&quot;repository_id&quot;:307199584,&quot;originating_url&quot;:&quot;https://github.com/Sathyasrip/277--Android-TeamProject/blob/main/README.md&quot;,&quot;user_id&quot;:73623815}}" data-hydro-click-hmac="5e319e414ed58b542b3ce0f61a276f53b66ca1361779a744db4f670ee78d9670">
         <svg aria-label="Hide this notice forever" class="octicon octicon-x v-align-text-top" viewBox="0 0 16 16" version="1.1" width="16" height="16" role="img"><path fill-rule="evenodd" d="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z"></path></svg>
 </button></form>  </div>
@@ -542,7 +542,7 @@
           <ul class="pagehead-actions flex-shrink-0 d-none d-md-inline" style="padding: 2px 0;">
 
   <li>
-            <form data-remote="true" class="d-flex js-social-form js-social-container" action="/notifications/subscribe" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="6R+uQFGBABBtZEptIN6sQAxvdg3PzRVInFRRna3GVRRUFKeqYYWwheCx9elErIXp5bkUxMUSyFpOdIQb9BGIfA==" />      <input type="hidden" name="repository_id" value="307199584">
+            <form data-remote="true" class="d-flex js-social-form js-social-container" action="/notifications/subscribe" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="lHv2BsJJz3iqgqNWHuWKu9CrWfBl8/gOS5/LM6eqx6EpcP/s8k1/7SdXHNJ6l6MSOX07OW8sJRyZvx61/n0ayQ==" />      <input type="hidden" name="repository_id" value="307199584">
 
       <details class="details-reset details-overlay select-menu hx_rsm">
         <summary class="btn btn-sm btn-with-count" data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;WATCH_BUTTON&quot;,&quot;repository_id&quot;:307199584,&quot;originating_url&quot;:&quot;https://github.com/Sathyasrip/277--Android-TeamProject/blob/main/README.md&quot;,&quot;user_id&quot;:73623815}}" data-hydro-click-hmac="09620c7277ac9b004d4d24b8ae58d49c7cb7ca48545d038ec7510e85108e6876" data-ga-click="Repository, click Watch settings, action:blob#show">          <span data-menu-button>
@@ -617,7 +617,7 @@
 
   <li>
         <div class="d-block js-toggler-container js-social-container starring-container ">
-    <form class="starred js-social-form" action="/Sathyasrip/277--Android-TeamProject/unstar" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="+pBdIFfKhgK6R777mDJHsK9Lm1kUu0P1fj/nkY2b9/kixZ+3sjtCor7AxBUQVrx1h3SW3vBcEqRSDbt6o1NV0g==" />
+    <form class="starred js-social-form" action="/Sathyasrip/277--Android-TeamProject/unstar" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="Km41MFfgVeGzrVByvwU+aR+nJVTi9NH+EViCUFxKTw7yO/enshGRQbcqKpw3YcWsN5go0wYTgK89at67coLtJQ==" />
       <input type="hidden" name="context" value="repository"></input>
       <button type="submit" class="btn btn-sm btn-with-count  js-toggler-target" aria-label="Unstar this repository" title="Unstar Sathyasrip/277--Android-TeamProject" data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;UNSTAR_BUTTON&quot;,&quot;repository_id&quot;:307199584,&quot;originating_url&quot;:&quot;https://github.com/Sathyasrip/277--Android-TeamProject/blob/main/README.md&quot;,&quot;user_id&quot;:73623815}}" data-hydro-click-hmac="1b2fa9492323214358cabb6647527b813b4e0cfad747898ed3eac5d1581581f3" data-ga-click="Repository, click unstar button, action:blob#show; text:Unstar">        <svg class="octicon octicon-star-fill" height="16" viewBox="0 0 16 16" version="1.1" width="16" aria-hidden="true"><path fill-rule="evenodd" d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"></path></svg>
         Unstar
@@ -626,7 +626,7 @@
            0
         </a>
 </form>
-    <form class="unstarred js-social-form" action="/Sathyasrip/277--Android-TeamProject/star" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="64MeA0MV3WAJapXMSk0w56HyQE+qECik2y+Dxab9r4qchW2ZAsVlSdy9FkLdO3cn61jv27UX/AKIiNwo86jgvg==" />
+    <form class="unstarred js-social-form" action="/Sathyasrip/277--Android-TeamProject/star" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="AGEkVsYACNMKme7h08xLLjyQYAQHD6ygvgIlPgfSZYB3Z1fMh9Cw+t9ObW9EugzudjrPkBgIeAbtpXrTUocqtA==" />
       <input type="hidden" name="context" value="repository"></input>
       <button type="submit" class="btn btn-sm btn-with-count  js-toggler-target" aria-label="Unstar this repository" title="Star Sathyasrip/277--Android-TeamProject" data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;STAR_BUTTON&quot;,&quot;repository_id&quot;:307199584,&quot;originating_url&quot;:&quot;https://github.com/Sathyasrip/277--Android-TeamProject/blob/main/README.md&quot;,&quot;user_id&quot;:73623815}}" data-hydro-click-hmac="a35e00fdc76ca473dea7f3e1313cee3d24edec87e2ce1b1ec16b93f7ca457dd3" data-ga-click="Repository, click star button, action:blob#show; text:Star">        <svg class="octicon octicon-star" height="16" viewBox="0 0 16 16" version="1.1" width="16" aria-hidden="true"><path fill-rule="evenodd" d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25zm0 2.445L6.615 5.5a.75.75 0 01-.564.41l-3.097.45 2.24 2.184a.75.75 0 01.216.664l-.528 3.084 2.769-1.456a.75.75 0 01.698 0l2.77 1.456-.53-3.084a.75.75 0 01.216-.664l2.24-2.183-3.096-.45a.75.75 0 01-.564-.41L8 2.694v.001z"></path></svg>
         Star
@@ -639,7 +639,7 @@
   </li>
 
   <li>
-            <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="btn-with-count" action="/Sathyasrip/277--Android-TeamProject/fork" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="y+jlRvOWbzl5u7Quumzvz3uI6NExh0B51IOX3SZsQImBu442foMlELFBYIVJ7t715se+CAamNcI9KlNCs0KXlA==" />
+            <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="btn-with-count" action="/Sathyasrip/277--Android-TeamProject/fork" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="2CxFk3UVzqyJ7dJEsxvNlzjvFF/LEEy6O2yfjDTgfh2Sfy7j+ACEhUEXBu9AmfytpaBChvwxOQHSxVsToc6pAA==" />
               <button class="btn btn-sm btn-with-count" data-hydro-click="{&quot;event_type&quot;:&quot;repository.click&quot;,&quot;payload&quot;:{&quot;target&quot;:&quot;FORK_BUTTON&quot;,&quot;repository_id&quot;:307199584,&quot;originating_url&quot;:&quot;https://github.com/Sathyasrip/277--Android-TeamProject/blob/main/README.md&quot;,&quot;user_id&quot;:73623815}}" data-hydro-click-hmac="7a32b6d2798d71f1c2dd90767ec063e2b3d51b93698c6a998b7a91cbedb97064" data-ga-click="Repository, show fork modal, action:blob#show; text:Fork" type="submit" title="Fork your own copy of Sathyasrip/277--Android-TeamProject to your account" aria-label="Fork your own copy of Sathyasrip/277--Android-TeamProject to your account">                <svg class="octicon octicon-repo-forked" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M5 3.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm0 2.122a2.25 2.25 0 10-1.5 0v.878A2.25 2.25 0 005.75 8.5h1.5v2.128a2.251 2.251 0 101.5 0V8.5h1.5a2.25 2.25 0 002.25-2.25v-.878a2.25 2.25 0 10-1.5 0v.878a.75.75 0 01-.75.75h-4.5A.75.75 0 015 6.25v-.878zm3.75 7.378a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm3-8.75a.75.75 0 100-1.5.75.75 0 000 1.5z"></path></svg>
                 Fork
 </button></form>
@@ -831,77 +831,17 @@
 
 
     <div class="Box d-flex flex-column flex-shrink-0 mb-3">
-      
-  <div class="Box-header Box-header--blue Details js-details-container">
-      <div class="d-flex flex-items-center">
-        <span class="flex-shrink-0 ml-n1 mr-n1 mt-n1 mb-n1">
-          <a rel="contributor" data-skip-pjax="true" data-hovercard-type="user" data-hovercard-url="/users/HisaamH/hovercard" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="/HisaamH"><img class="avatar avatar-user" src="https://avatars2.githubusercontent.com/u/73623815?s=48&amp;v=4" width="24" height="24" alt="@HisaamH" /></a>
-        </span>
-        <div class="flex-1 d-flex flex-items-center ml-3 min-width-0">
-          <div class="css-truncate css-truncate-overflow">
-            <a class="text-bold link-gray-dark" rel="contributor" data-hovercard-type="user" data-hovercard-url="/users/HisaamH/hovercard" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="/HisaamH">HisaamH</a>
-
-              <span>
-                <a data-pjax="true" title="Update README.md" class="link-gray" href="/Sathyasrip/277--Android-TeamProject/commit/7f3f449f4739f131b97586c8269863ba058d0c7c">Update README.md</a>
-              </span>
-          </div>
-
-
-          <span class="ml-2">
-            <include-fragment accept="text/fragment+html" src="/Sathyasrip/277--Android-TeamProject/commit/7f3f449f4739f131b97586c8269863ba058d0c7c/rollup?direction=e" class="d-inline"></include-fragment>
-          </span>
+      <include-fragment src="/Sathyasrip/277--Android-TeamProject/contributors/main/README.md" class="commit-loader">
+        <div class="Box-header Box-header--blue d-flex flex-items-center">
+          <div class="Skeleton avatar avatar-user flex-shrink-0 ml-n1 mr-n1 mt-n1 mb-n1" style="width:24px;height:24px;"></div>
+          <div class="Skeleton Skeleton--text col-5 ml-2">&nbsp;</div>
         </div>
-        <div class="ml-3 d-flex flex-shrink-0 flex-items-center flex-justify-end text-gray no-wrap">
-          <span class="d-none d-md-inline">
-            <span>Latest commit</span>
-            <a class="text-small text-mono link-gray" href="/Sathyasrip/277--Android-TeamProject/commit/7f3f449f4739f131b97586c8269863ba058d0c7c" data-pjax>7f3f449</a>
-            <span itemprop="dateModified"><relative-time datetime="2020-11-16T12:01:08Z" class="no-wrap">Nov 16, 2020</relative-time></span>
-          </span>
 
-          <a data-pjax href="/Sathyasrip/277--Android-TeamProject/commits/main/README.md" class="ml-3 no-wrap link-gray-dark no-underline">
-            <svg class="octicon octicon-history text-gray" height="16" viewBox="0 0 16 16" version="1.1" width="16" aria-hidden="true"><path fill-rule="evenodd" d="M1.643 3.143L.427 1.927A.25.25 0 000 2.104V5.75c0 .138.112.25.25.25h3.646a.25.25 0 00.177-.427L2.715 4.215a6.5 6.5 0 11-1.18 4.458.75.75 0 10-1.493.154 8.001 8.001 0 101.6-5.684zM7.75 4a.75.75 0 01.75.75v2.992l2.028.812a.75.75 0 01-.557 1.392l-2.5-1A.75.75 0 017 8.25v-3.5A.75.75 0 017.75 4z"></path></svg>
-            <span class="d-none d-sm-inline">
-              <strong>History</strong>
-            </span>
-          </a>
+        <div class="Box-body d-flex flex-items-center" >
+          <div class="Skeleton Skeleton--text col-1">&nbsp;</div>
+          <span class="text-red h6 loader-error">Cannot retrieve contributors at this time</span>
         </div>
-      </div>
-
-  </div>
-
-  <div class="Box-body d-flex flex-items-center flex-auto border-bottom-0 flex-wrap" >
-    <details class="details-reset details-overlay details-overlay-dark lh-default text-gray-dark float-left mr-3" id="blob_contributors_box">
-      <summary class="link-gray-dark">
-        <svg class="octicon octicon-people text-gray" height="16" viewBox="0 0 16 16" version="1.1" width="16" aria-hidden="true"><path fill-rule="evenodd" d="M5.5 3.5a2 2 0 100 4 2 2 0 000-4zM2 5.5a3.5 3.5 0 115.898 2.549 5.507 5.507 0 013.034 4.084.75.75 0 11-1.482.235 4.001 4.001 0 00-7.9 0 .75.75 0 01-1.482-.236A5.507 5.507 0 013.102 8.05 3.49 3.49 0 012 5.5zM11 4a.75.75 0 100 1.5 1.5 1.5 0 01.666 2.844.75.75 0 00-.416.672v.352a.75.75 0 00.574.73c1.2.289 2.162 1.2 2.522 2.372a.75.75 0 101.434-.44 5.01 5.01 0 00-2.56-3.012A3 3 0 0011 4z"></path></svg>
-        <strong>2</strong>
-        
-        contributors
-      </summary>
-      <details-dialog
-        class="Box Box--overlay d-flex flex-column anim-fade-in fast"
-        aria-label="Users who have contributed to this file"
-        src="/Sathyasrip/277--Android-TeamProject/contributors-list/main/README.md" preload>
-        <div class="Box-header">
-          <button class="Box-btn-octicon btn-octicon float-right" type="button" aria-label="Close dialog" data-close-dialog>
-            <svg class="octicon octicon-x" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M3.72 3.72a.75.75 0 011.06 0L8 6.94l3.22-3.22a.75.75 0 111.06 1.06L9.06 8l3.22 3.22a.75.75 0 11-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 01-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 010-1.06z"></path></svg>
-          </button>
-          <h3 class="Box-title">
-            Users who have contributed to this file
-          </h3>
-        </div>
-        <include-fragment class="octocat-spinner my-3" aria-label="Loading..."></include-fragment>
-      </details-dialog>
-    </details>
-      <span class="">
-    <a class="avatar-link" data-hovercard-type="user" data-hovercard-url="/users/HisaamH/hovercard" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="/Sathyasrip/277--Android-TeamProject/commits/main/README.md?author=HisaamH">
-      <img class="avatar mr-2 avatar-user" src="https://avatars2.githubusercontent.com/u/73623815?s=48&amp;v=4" width="24" height="24" alt="@HisaamH" /> 
-</a>    <a class="avatar-link" data-hovercard-type="user" data-hovercard-url="/users/Sathyasrip/hovercard" data-octo-click="hovercard-link-click" data-octo-dimensions="link_type:self" href="/Sathyasrip/277--Android-TeamProject/commits/main/README.md?author=Sathyasrip">
-      <img class="avatar mr-2 avatar-user" src="https://avatars1.githubusercontent.com/u/37474643?s=48&amp;v=4" width="24" height="24" alt="@Sathyasrip" /> 
-</a>
-</span>
-
-  </div>
-    </div>
+</include-fragment>    </div>
 
 
 
@@ -935,13 +875,13 @@
               <svg class="octicon octicon-device-desktop" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M1.75 2.5h12.5a.25.25 0 01.25.25v7.5a.25.25 0 01-.25.25H1.75a.25.25 0 01-.25-.25v-7.5a.25.25 0 01.25-.25zM14.25 1H1.75A1.75 1.75 0 000 2.75v7.5C0 11.216.784 12 1.75 12h3.727c-.1 1.041-.52 1.872-1.292 2.757A.75.75 0 004.75 16h6.5a.75.75 0 00.565-1.243c-.772-.885-1.193-1.716-1.292-2.757h3.727A1.75 1.75 0 0016 10.25v-7.5A1.75 1.75 0 0014.25 1zM9.018 12H6.982a5.72 5.72 0 01-.765 2.5h3.566a5.72 5.72 0 01-.765-2.5z"></path></svg>
           </a>
 
-          <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="inline-form js-update-url-with-hash" action="/Sathyasrip/277--Android-TeamProject/edit/main/README.md" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="fYiP6K1wI6q+pd67YAKc+rVF8dLIGpL0juu6BEQwRll3H+7hzfZ6y2vTliMnWExdUkAb7AoeMRgnvumvBqrDtg==" />
+          <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="inline-form js-update-url-with-hash" action="/Sathyasrip/277--Android-TeamProject/edit/main/README.md" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="ZUOUKNWXxjd6OzopKRD02dQYLVKUFMbRo2qeTHnKQYdv1PUhtRGfVq9NcrFuSiR+Mx3HbFYQZT0KP83nO1DEaA==" />
             <button class="btn-octicon tooltipped tooltipped-nw" type="submit"
               aria-label="Edit this file" data-hotkey="e" data-disable-with>
               <svg class="octicon octicon-pencil" height="16" viewBox="0 0 16 16" version="1.1" width="16" aria-hidden="true"><path fill-rule="evenodd" d="M11.013 1.427a1.75 1.75 0 012.474 0l1.086 1.086a1.75 1.75 0 010 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 01-.927-.928l.929-3.25a1.75 1.75 0 01.445-.758l8.61-8.61zm1.414 1.06a.25.25 0 00-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 000-.354l-1.086-1.086zM11.189 6.25L9.75 4.81l-6.286 6.287a.25.25 0 00-.064.108l-.558 1.953 1.953-.558a.249.249 0 00.108-.064l6.286-6.286z"></path></svg>
             </button>
 </form>
-          <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="inline-form" action="/Sathyasrip/277--Android-TeamProject/delete/main/README.md" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="iPZQmifEPddl4ksXarXmXhC0qN6gy68mHVZH9rp08gF/0Rg5MCqmMQAq0wKE16Q25vykEPu7zCoy/7a++3URZQ==" />
+          <!-- '"` --><!-- </textarea></xmp> --></option></form><form class="inline-form" action="/Sathyasrip/277--Android-TeamProject/delete/main/README.md" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="ypex8wxdiv9JqP0AJS8ROVSjmYWjK2RtxFax9ZPTV1Y9sPlQG7MRGSxgZRXLTVNRouuVS/hbB2Hr/0C90tK0Mg==" />
             <button class="btn-octicon btn-octicon-danger tooltipped tooltipped-nw" type="submit"
               aria-label="Delete this file" data-disable-with>
               <svg class="octicon octicon-trashcan" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path fill-rule="evenodd" d="M6.5 1.75a.25.25 0 01.25-.25h2.5a.25.25 0 01.25.25V3h-3V1.75zm4.5 0V3h2.25a.75.75 0 010 1.5H2.75a.75.75 0 010-1.5H5V1.75C5 .784 5.784 0 6.75 0h2.5C10.216 0 11 .784 11 1.75zM4.496 6.675a.75.75 0 10-1.492.15l.66 6.6A1.75 1.75 0 005.405 15h5.19c.9 0 1.652-.681 1.741-1.576l.66-6.6a.75.75 0 00-1.492-.149l-.66 6.6a.25.25 0 01-.249.225h-5.19a.25.25 0 01-.249-.225l-.66-6.6z"></path></svg>
