@@ -1,4 +1,4 @@
-# Acadamia
+# Academia
 An app where researchers or their ilk can peer-review professional papers on the go.
 
 ## Building the project
