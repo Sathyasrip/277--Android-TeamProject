@@ -1,4 +1,4 @@
-package com.example.teamproject;
+package com.example.teamproject.model;
 
 // Used for our Custom ListView Adapter to display comments loaded from the saved comments JSON file.
 public class SingleComment {

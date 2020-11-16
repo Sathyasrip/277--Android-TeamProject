@@ -1,4 +1,4 @@
-package com.example.teamproject;
+package com.example.teamproject.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,6 +11,8 @@ import android.widget.Spinner;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.ViewPager;
 
+import com.example.teamproject.R;
+import com.example.teamproject.model.ReviewPageAdapter;
 import com.google.android.material.tabs.TabLayout;
 
 public class ReviewActivity extends AppCompatActivity {
@@ -40,10 +42,10 @@ public class ReviewActivity extends AppCompatActivity {
         SaveChanges.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: Launch LocalDemoActivity after performing the edits.
+                // TODO: Launch UserPortal after performing the edits.
                 Intent DemoMenuIntent = new Intent(
                         ReviewActivity.this,
-                        LocalDemoActivity.class);
+                        UserPortal.class);
                 startActivity(DemoMenuIntent);
             }
         });

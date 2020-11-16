@@ -1,4 +1,4 @@
-package com.example.teamproject;
+package com.example.teamproject.model;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,6 +9,10 @@ import android.widget.Button;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.example.teamproject.R;
+import com.example.teamproject.model.SingleComment;
+
 import java.util.List;
 
 public class CommentsListAdapter extends ArrayAdapter<SingleComment> {

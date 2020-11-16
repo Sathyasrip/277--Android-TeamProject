@@ -1,4 +1,4 @@
-package com.example.teamproject;
+package com.example.teamproject.ui;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.teamproject.R;
 import com.pdftron.common.PDFNetException;
 import com.pdftron.pdf.PDFDoc;
 import com.pdftron.pdf.PDFViewCtrl;

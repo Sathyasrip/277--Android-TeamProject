@@ -1,4 +1,4 @@
-package com.example.teamproject;
+package com.example.teamproject.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,7 +10,9 @@ import android.widget.Spinner;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class LocalDemoActivity extends AppCompatActivity {
+import com.example.teamproject.R;
+
+public class UserPortal extends AppCompatActivity {
 
     Boolean DebugMode = true;
     private Button StartReview, OpenDoc, SyncDoc;
@@ -30,7 +32,7 @@ public class LocalDemoActivity extends AppCompatActivity {
 
         // TODO: Load the spinner based on SQL or NoSQL Database entries.
         review_chooser = (Spinner) findViewById(R.id.review_chooser);
-        ArrayAdapter<String> adpter = new ArrayAdapter<String> (LocalDemoActivity.this, R.layout.spinner, existing_reviews);
+        ArrayAdapter<String> adpter = new ArrayAdapter<String> (UserPortal.this, R.layout.spinner, existing_reviews);
         review_chooser.setAdapter(adpter);
 
         // Initialize all the buttons and EditText.
@@ -71,7 +73,7 @@ public class LocalDemoActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // TODO: Launch ReviewActivity after adding in the appropriate extras.
                 Intent ReviewIntent = new Intent(
-                        LocalDemoActivity.this,
+                        UserPortal.this,
                         ReviewActivity.class);
                 startActivity(ReviewIntent);
             }

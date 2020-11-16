@@ -1,21 +1,25 @@
-package com.example.teamproject;
+package com.example.teamproject.ui;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
-public class LoginActivity extends AppCompatActivity {
+import com.example.teamproject.R;
+
+public class LoginScreen extends AppCompatActivity {
 
     public static final String EXTRA_ACCOUNT_USERNAME = "com.example.teamproject.ACCOUNT_USER";
     public static final String EXTRA_ACCOUNT_TYPE = "com.example.teamproject.ACCOUNT_TYPE";
 
-    private Button ButtonLogin, ButtonRegister;
+    private Button ButtonLogin;
+    private TextView ClickToRegister;
     private EditText EditTextUserName, EditTextUserPassword;
-    static String[] TestAccount = {"test", "test1234"};
-    static String[] AdminAccount = {"admin", "project11"};
+    static String[] TestAccount = {"test", "test1234", "academia.tester1@gmail.com"};
+    static String[] AdminAccount = {"admin", "project11", "academia.admin1@gmail.com"};
     String[] AccountType = {"standard", "admin"};
     private String username = "", password = "",
             accountType = "unknown", accountUser = "";
@@ -26,7 +30,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.login_screen);
 
         ButtonLogin = (Button) findViewById(R.id.button_userlogin);
-        ButtonRegister = (Button) findViewById(R.id.button_userregister);
+        ClickToRegister = (TextView) findViewById(R.id.tv_register_click);
         EditTextUserName = (EditText) findViewById(R.id.editTextUsername);
         EditTextUserPassword = (EditText) findViewById(R.id.editTextPassword);
 
@@ -77,8 +81,8 @@ public class LoginActivity extends AppCompatActivity {
                 // Finally, update the next activity's bundle and start the activity.
                 if (accountType != "unknown") {
                     Intent DebugScreenIntent = new Intent(
-                            LoginActivity.this,
-                            DebugMenuActivity.class);
+                            LoginScreen.this,
+                            UserPortal.class);
                     // Update the EXTRAS on this activity to be used by the next activity.
                     DebugScreenIntent.putExtra(EXTRA_ACCOUNT_USERNAME, accountUser);
                     DebugScreenIntent.putExtra(EXTRA_ACCOUNT_TYPE, accountType);
@@ -90,12 +94,12 @@ public class LoginActivity extends AppCompatActivity {
         /****************************************************************
          * Registration Menu requires SQL Lite or NoSQL Cloud Firestore.
          ****************************************************************/
-        ButtonRegister.setOnClickListener(new View.OnClickListener() {
+        ClickToRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent RegistrationIntent = new Intent(
-                        LoginActivity.this,
-                        RegistrationActivity.class);
+                        LoginScreen.this,
+                        NewRegistration.class);
                 startActivity(RegistrationIntent);
             }
         });

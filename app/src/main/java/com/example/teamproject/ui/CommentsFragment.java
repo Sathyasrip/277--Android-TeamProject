@@ -1,14 +1,16 @@
-package com.example.teamproject;
-
+package com.example.teamproject.ui;
 import android.content.Context;
 import android.os.Bundle;
-import android.renderscript.Sampler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 
 import androidx.fragment.app.Fragment;
+
+import com.example.teamproject.R;
+import com.example.teamproject.model.CommentsListAdapter;
+import com.example.teamproject.model.SingleComment;
 
 import java.util.ArrayList;
 import java.util.List;

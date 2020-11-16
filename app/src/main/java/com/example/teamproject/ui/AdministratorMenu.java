@@ -1,13 +1,13 @@
-package com.example.teamproject;
+package com.example.teamproject.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-
 import androidx.appcompat.app.AppCompatActivity;
+import com.example.teamproject.R;
 
-public class DebugMenuActivity extends AppCompatActivity {
+public class AdministratorMenu extends AppCompatActivity {
 
     Button UserProfile, OfflineDemo, Logout;
 
@@ -26,27 +26,27 @@ public class DebugMenuActivity extends AppCompatActivity {
         UserProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent UserProfileIntent = new Intent(
-                        DebugMenuActivity.this,
-                        UserProfileActivity.class);
-                startActivity(UserProfileIntent);
+                //Intent UserProfileIntent = new Intent(
+                //        AdministratorMenu.this,
+                //        UserProfile.class);
+                //startActivity(UserProfileIntent);
             }
         });
         OfflineDemo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent OfflineDemoIntent = new Intent(
-                        DebugMenuActivity.this,
-                        LocalDemoActivity.class);
-                startActivity(OfflineDemoIntent);
+                //Intent OfflineDemoIntent = new Intent(
+                //        AdministratorMenu.this,
+                //        UserPortal.class);
+                //startActivity(OfflineDemoIntent);
             }
         });
         Logout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent LogoutIntent = new Intent(
-                        DebugMenuActivity.this,
-                        LoginActivity.class);
+                        AdministratorMenu.this,
+                        LoginScreen.class);
                 startActivity(LogoutIntent);
             }
         });

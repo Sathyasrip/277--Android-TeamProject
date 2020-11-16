@@ -1,4 +1,4 @@
-package com.example.teamproject;
+package com.example.teamproject.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,7 +7,9 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class UserProfileActivity extends AppCompatActivity {
+import com.example.teamproject.R;
+
+public class UserProfile extends AppCompatActivity {
 
     Button ButtonProfile;
 
@@ -25,8 +27,8 @@ public class UserProfileActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // After getting the changes & updated the database, return to DebugMenu activity.
                 Intent DebugMenuIntent = new Intent(
-                        UserProfileActivity.this,
-                        DebugMenuActivity.class);
+                        UserProfile.this,
+                        AdministratorMenu.class);
                 startActivity(DebugMenuIntent);
             }
         });

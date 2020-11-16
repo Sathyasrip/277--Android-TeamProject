@@ -1,66 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.teamproject">
-
     <!-- All permissions for PDFTron to be usable. -->
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
+        android:name="androidx.multidex.MultiDexApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:largeHeap="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:name="androidx.multidex.MultiDexApplication"
-        android:largeHeap="true"
         android:usesCleartextTraffic="true">
 
         <!-- All of our app activities for our application -->
         <activity
-            android:name=".LoginActivity"
+            android:name=".ui.SplashScreen"
             android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!-- Probably remove DebugMenuActivity from the final build. -->
         <activity
-            android:name=".DebugMenuActivity"
-            android:theme="@style/Theme.AppCompat.NoActionBar">
-        </activity>
+            android:name=".ui.LoginScreen"
+            android:theme="@style/Theme.AppCompat.NoActionBar"/>
         <activity
-            android:name=".RegistrationActivity"
-            android:theme="@style/Theme.AppCompat.NoActionBar">
-        </activity>
+            android:name=".ui.NewRegistration"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name=".UserProfileActivity"
-            android:theme="@style/Theme.AppCompat.NoActionBar">
-        </activity>
-        <!-- This is the activity that will be demoed -->
+            android:name=".ui.UserProfile"
+            android:theme="@style/Theme.AppCompat.NoActionBar" /> <!-- This is the activity that will be demoed -->
         <activity
-            android:name=".LocalDemoActivity"
-            android:theme="@style/Theme.AppCompat.NoActionBar">
-        </activity>
+            android:name=".ui.UserPortal"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
-            android:name=".ReviewActivity"
-            android:windowSoftInputMode="adjustPan"
-            android:theme="@style/CustomAppTheme">
-        </activity>
-
-        <!-- Custom fonts for our app -->
+            android:name=".ui.ReviewActivity"
+            android:theme="@style/CustomAppTheme"
+            android:windowSoftInputMode="adjustPan" /> <!-- Custom fonts for our app -->
         <meta-data
             android:name="preloaded_fonts"
-            android:resource="@array/preloaded_fonts" />
-
-        <!-- PDFTron license key -->
+            android:resource="@array/preloaded_fonts" /> <!-- PDFTron license key -->
         <meta-data
             android:name="pdftron_license_key"
-            android:value="${pdftronLicenseKey}"/>
-
+            android:value="${pdftronLicenseKey}" />
     </application>
 
 </manifest>

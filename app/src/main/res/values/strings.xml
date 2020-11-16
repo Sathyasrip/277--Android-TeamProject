@@ -1,16 +1,21 @@
 <resources>
-    <string name="app_name">Criti:Queue</string>
-    <string name="login_app_name">Criti:Queue</string>
+    <string name="app_name">Academia</string>
+    <string name="text_register_click">New to this app? Click here to register!</string>
     <string name="button_login">Login</string>
     <string name="button_register">Register</string>
     <string name="login_welcome_msg_1">Hi there,</string>
     <string name="login_welcome_msg_2">welcome back!</string>
+    <string name="login_email_hint">thejohndoe@gmail.com</string>
     <string name="login_username_hint">johndoe</string>
     <string name="login_password_hint">password</string>
     <string name="registration_msg">User Registration</string>
     <string name="registration_name">John Doe</string>
     <string name="registration_credentials">Senior Software Engineer, Student</string>
-    <string name="button_registration">Registration</string>
+    <string name="error_registration_email">Please enter a valid non-existing email address</string>
+    <string name="error_registration_username">Username is already taken!</string>
+    <string name="error_registration_password">Password must be at least 6 characters!</string>
+    <string name="error_registration_confirm_password">Password do not match!</string>
+    <string name="button_registration">Register</string>
     <string name="profile_msg">User Profile</string>
     <string name="profile_name">John Doe</string>
     <string name="profile_username">johndoe</string>

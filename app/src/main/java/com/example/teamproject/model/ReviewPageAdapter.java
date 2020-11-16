@@ -1,9 +1,12 @@
-package com.example.teamproject;
+package com.example.teamproject.model;
 
 import android.content.Context;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
+
+import com.example.teamproject.ui.CommentsFragment;
+import com.example.teamproject.ui.ViewDocFragment;
 
 public class ReviewPageAdapter extends FragmentPagerAdapter {
     private String tabTitles[] = new String[] { "View", "Comments" };

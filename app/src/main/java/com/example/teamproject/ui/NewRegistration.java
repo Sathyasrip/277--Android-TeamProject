@@ -1,24 +1,29 @@
-package com.example.teamproject;
+package com.example.teamproject.ui;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.teamproject.R;
+
 import java.util.ArrayList;
 
-public class RegistrationActivity extends AppCompatActivity {
+public class NewRegistration extends AppCompatActivity {
 
+    private ImageView GoBackIcon;
     private Button Registration;
-    private EditText UserName, Password, ConfirmPassword, FullName, Credentials;
-    private TextView UserNameError, PasswordError, ConfirmPasswordError;
-    private String username, password, confirm_password, fullname, credentials;
+    private EditText EmailAddress, UserName, Password, ConfirmPassword, FullName, Credentials;
+    private TextView EmailError, UserNameError, PasswordError, ConfirmPasswordError;
+    private String email_address, username, password, confirm_password, fullname, credentials;
+    private ArrayList<String> user_emails = new ArrayList<String>();
     private ArrayList<String> user_logins = new ArrayList<String>();
-    private Boolean duplicate_user = false, invalid_password = false,
+    private Boolean email_error = false, duplicate_user = false, invalid_password = false,
             non_matching_passwords = false;
     private ArrayList<Boolean> filled_fields = new ArrayList<Boolean>();
 
@@ -41,39 +46,92 @@ public class RegistrationActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.registration);
+        setContentView(R.layout.user_registration);
 
+        GoBackIcon = (ImageView) findViewById(R.id.image_registration_go_back);
         Registration = (Button) findViewById(R.id.button_save_registration);
+        EmailAddress = (EditText) findViewById(R.id.editTextRegisterEmail);
         UserName = (EditText) findViewById(R.id.editTextRegisterUsername);
         Password = (EditText) findViewById(R.id.editTextRegisterPassword);
         ConfirmPassword = (EditText) findViewById(R.id.editTextRegisterConfirmPassword);
         FullName = (EditText) findViewById(R.id.editTextRegisterFullName);
         Credentials = (EditText) findViewById(R.id.editTextRegisterCredentials);
+        EmailError = (TextView) findViewById(R.id.tv_email_failure);
         UserNameError = (TextView) findViewById(R.id.tv_username_failure);
         PasswordError = (TextView) findViewById(R.id.tv_password_failure);
         ConfirmPasswordError = (TextView) findViewById(R.id.tv_confirm_failure);
 
-        /**********************************************************************
-         * TODO: Use an SQL Query or NoSQL Query to get a list of user logins.
-         *********************************************************************/
-        user_logins.add(LoginActivity.TestAccount[0]);
-        user_logins.add(LoginActivity.AdminAccount[0]);
+        /***************************************************************************************
+         * TODO: Use an SQL Query or NoSQL Query to get a list of user logins & email accounts.
+         **************************************************************************************/
+        user_emails.add(LoginScreen.TestAccount[2]);
+        user_emails.add(LoginScreen.AdminAccount[2]);
+        user_logins.add(LoginScreen.TestAccount[0]);
+        user_logins.add(LoginScreen.AdminAccount[0]);
 
 
         /**********************************************************************
          * TODO: Replace with LiveData instead.
          *********************************************************************/
         // Initialize all filled_field flags to false.
-        for (int i=0; i < 5; ++i) {
+        for (int i=0; i < 6; ++i) {
             filled_fields.add(false);
         }
 
+        /***************************************************
+         * If the user presses the back icon, return to the
+         * Login activity.
+         **************************************************/
+        GoBackIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Stop the activity and go back to the Login Screen.
+                Intent LoginIntent = new Intent(
+                        NewRegistration.this,
+                        LoginScreen.class);
+                startActivity(LoginIntent);
+                finish();
+            }
+        });
+
         /*******************************************************
          * Check if the user entered the following:
+         * - Valid Email Address.
          * - Valid username (it is not taken already)
          * - Valid password (over 6 characters long)
          * - Confirmed password matches set password.
          *******************************************************/
+        EmailAddress.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                // When focus is lost check that the text field has valid values.
+                email_address = String.valueOf(EmailAddress.getText());
+
+                if (!hasFocus) {
+                    // Check all user emails to see if the email address specified is duplicate.
+                    email_error = false;
+                    for (int i=0; i < user_emails.size(); ++i) {
+                        if (email_address.equals(user_emails.get(i))) {
+                            email_error = true; // Only set true if there is a duplicate email.
+                        }
+                    }
+
+                    // If a duplicate username exists, 'enable' the corresponding error message.
+                    if (email_error) {
+                        EmailError.setTextColor(Color.RED); // Red means duplicate.
+                        EmailError.setText(getResources().getString(R.string.error_registration_email));
+                        filled_fields.set(0, false);
+                    } else {
+                        EmailError.setText("");
+                        if (!email_address.equals("")) {
+                            filled_fields.set(0, true);
+                        }
+                    }
+
+                    UpdateRegistrationButton();
+                }
+            }
+        });
         UserName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -91,12 +149,12 @@ public class RegistrationActivity extends AppCompatActivity {
 
                     // If a duplicate username exists, 'enable' the corresponding error message.
                     if (duplicate_user) {
-                        UserNameError.setTextColor(Color.RED); // Red means duplicate.
-                        filled_fields.set(0, false);
+                        UserNameError.setText(getResources().getString(R.string.error_registration_username));
+                        filled_fields.set(1, false);
                     } else {
-                        UserNameError.setTextColor(Color.WHITE); // White means disabled.
+                        UserNameError.setText("");
                         if (!username.equals("")) {
-                            filled_fields.set(0, true);
+                            filled_fields.set(1, true);
                         }
                     }
 
@@ -119,12 +177,12 @@ public class RegistrationActivity extends AppCompatActivity {
 
                     // If the password is invalid, 'enable' the corresponding error message.
                     if (invalid_password) {
-                        PasswordError.setTextColor(Color.RED); // Red means invalid password.
-                        filled_fields.set(1, false);
+                        PasswordError.setText(getResources().getString(R.string.error_registration_password));
+                        filled_fields.set(2, false);
                     } else {
-                        PasswordError.setTextColor(Color.WHITE); // White means disabled.
+                        PasswordError.setText("");
                         if (!password.equals("")) {
-                            filled_fields.set(1, true);
+                            filled_fields.set(2, true);
                         }
                     }
 
@@ -148,12 +206,12 @@ public class RegistrationActivity extends AppCompatActivity {
 
                     // If the two password fields don't match 'enable' the error message.
                     if (non_matching_passwords) {
-                        ConfirmPasswordError.setTextColor(Color.RED); // Red means no match.
-                        filled_fields.set(2, false);
+                        ConfirmPasswordError.setText(getResources().getString(R.string.error_registration_confirm_password));
+                        filled_fields.set(3, false);
                     } else {
-                        ConfirmPasswordError.setTextColor(Color.WHITE); // White means disabled.
+                        ConfirmPasswordError.setText("");
                         if (!confirm_password.equals("")) {
-                            filled_fields.set(2, true);
+                            filled_fields.set(3, true);
                         }
                     }
 
@@ -169,9 +227,9 @@ public class RegistrationActivity extends AppCompatActivity {
 
                 if (!hasFocus) {
                     if (!fullname.equals("")) {
-                        filled_fields.set(3, true);
+                        filled_fields.set(4, true);
                     } else {
-                        filled_fields.set(3, false);
+                        filled_fields.set(4, false);
                     }
 
                     UpdateRegistrationButton();
@@ -186,9 +244,9 @@ public class RegistrationActivity extends AppCompatActivity {
 
                 if (!hasFocus) {
                     if (!credentials.equals("")) {
-                        filled_fields.set(4, true);
+                        filled_fields.set(5, true);
                     } else {
-                        filled_fields.set(4, false);
+                        filled_fields.set(5, false);
                     }
 
                     UpdateRegistrationButton();
@@ -205,9 +263,10 @@ public class RegistrationActivity extends AppCompatActivity {
             public void onClick(View v) {
                 // TODO: Save the data provided in the EditText to the database & return to login.
                 Intent LoginIntent = new Intent(
-                        RegistrationActivity.this,
-                        LoginActivity.class);
+                        NewRegistration.this,
+                        LoginScreen.class);
                 startActivity(LoginIntent);
+                finish();
             }
         });
     }
