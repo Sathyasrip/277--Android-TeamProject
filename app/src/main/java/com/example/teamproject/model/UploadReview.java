@@ -4,43 +4,74 @@ import java.util.ArrayList;
 
 // Used to Update the NoSQL Firebase entry for the given version.
 public class UploadReview {
-    String owner;
-    String review_id;
-    ArrayList<SingleComment> comments = new ArrayList<SingleComment>();
+    private String firebase_review_uuid, owner, title, current_version, latest_version;
+    private String annotations_file, pdf_file;
+    private ArrayList<SingleComment> comments = new ArrayList<SingleComment>();
 
-    public UploadReview(String owner, String review_id, ArrayList<SingleComment> comments) {
+    public UploadReview(String firebase_review_uuid, String owner, String title,
+                        String latest_version, String current_version, String pdf_file) {
+        this.firebase_review_uuid = firebase_review_uuid;
         this.owner = owner;
-        this.review_id = review_id;
-        this.comments = comments;
+        this.title = title;
+        this.latest_version = latest_version;
+        this.current_version = current_version;
+        this.pdf_file = pdf_file;
     }
 
-    public String getOwner() {
-        // Current owner of the Review. May be used to modify some entry in an NoSQL Database.
+    public String ReviewUUID() {
+        return firebase_review_uuid;
+    }
+
+    public String Owner() {
         return owner;
     }
 
-    public String getReviewID() {
-        // The current 'Review' has all its files listed under UUID_v#.
-        // UUID = UUID of title, v# = Version #. Example: abcdajkjah123kh_v1.
-        return review_id;
+    public String ReviewTitle() {
+        return title;
     }
 
-    public String getCommentsDatabase(String review_id) {
-        // This is the NoSQL database that will store the comments for the current Review version.
-        String comments_database = "comments_" + review_id;
-        return comments_database;
+    public String LatestVersion() {
+        return latest_version;
     }
 
-    public String getAnnotationsFilename(String review_id) {
+    public String CurrentVersion() {
+        return latest_version;
+    }
+
+    public ArrayList<SingleComment> Comments() {
+        // Used to store all comments made by the current user.
+        return comments;
+    }
+
+    public String FirebasePDFFile() {
+        String pdf_filename = "gs://academiabeta-f8813.appspot.com/pdfs/" + this.firebase_review_uuid + "_v" + current_version + ".pdf";
+        return pdf_filename;
+    }
+
+    public String FirebaseAnnotationsFile() {
         // Source: https://www.pdftron.com/documentation/web/guides/annotation/import-export/files/
-        // This is the NoSQL database that will store the comments for the current Review version.
-        String annotations_filename = review_id + ".xfdf";
+        String annotations_filename = "gs://academiabeta-f8813.appspot.com/annotations/" + this.firebase_review_uuid + "_v" + current_version + ".xfdf";
         return annotations_filename;
     }
 
-    public ArrayList<SingleComment> getComments() {
-        // These comments will be used to update entries in the database given by
-        // getCommentsDatabase;
-        return comments;
+    public void LocalAnnotationsFile(String annotations_file) {
+        this.annotations_file = annotations_file;
+    }
+
+    public void SetToLatestVersion() {
+        this.latest_version = this.current_version;
+    }
+
+    public void SetComments(ArrayList<SingleComment> comments) {
+        this.comments = new ArrayList<SingleComment>();
+        this.comments = comments;
+    }
+
+    public void SetLocalAnnotationsFile(String annotations_file) {
+        this.annotations_file = annotations_file;
+    }
+
+    public void SetPDFFile(String pdf_file) {
+        this.pdf_file = pdf_file;
     }
 }

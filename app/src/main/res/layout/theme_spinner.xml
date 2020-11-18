@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/theme_spinner_textview"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fontFamily="@font/antic"
+    android:gravity="center|top"
+    android:padding="5dp"
+    android:text="Night Sky (Default)"
+    android:textColor="@color/colorBlack"
+    android:background="#CCE6E6E6"
+    android:textSize="17sp"
+    android:textStyle="bold">
+</TextView>

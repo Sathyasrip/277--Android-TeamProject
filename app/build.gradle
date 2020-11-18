@@ -1,5 +1,8 @@
 apply plugin: 'com.android.application'
 
+// Firebase SDK
+apply plugin: 'com.google.gms.google-services'
+
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.2"
@@ -31,6 +34,17 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.2'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+
+    // Picasso: Loading images on ImageView with Image URL:
+    implementation 'com.squareup.picasso:picasso:2.71828'
+
+    // Firebase SDK
+    implementation platform('com.google.firebase:firebase-bom:26.1.0')
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-auth'
+    implementation 'com.google.firebase:firebase-firestore'
+    implementation 'com.google.firebase:firebase-storage'
+    implementation 'com.google.firebase:firebase-database'
 
     // ***** TabLayout and ViewPager dependencies. ****
     implementation 'com.android.support:appcompat-v7:27.1.1'

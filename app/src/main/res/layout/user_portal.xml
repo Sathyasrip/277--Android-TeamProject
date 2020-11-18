@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/userportal_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/nightsky_theme">
@@ -22,13 +23,14 @@
 
     <ImageView
         android:id="@+id/image_userportal_delete_review"
-        android:layout_width="71dp"
-        android:layout_height="60dp"
+        android:layout_width="44dp"
+        android:layout_height="32dp"
+        android:layout_marginTop="24dp"
         android:focusable="auto"
         android:visibility="visible"
         app:layout_constraintEnd_toStartOf="@+id/image_userportal_profile"
         app:layout_constraintStart_toEndOf="@+id/image_userportal_go_back"
-        app:layout_constraintTop_toTopOf="@+id/image_userportal_go_back"
+        app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/icon_delete" />
 
     <ImageView
@@ -41,6 +43,21 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/no_photo" />
+
+    <TextView
+        android:id="@+id/tv_userportal_account"
+        android:layout_width="60dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:background="#CCFFFFFF"
+        android:fontFamily="@font/antic"
+        android:gravity="center_horizontal"
+        android:text="standard"
+        android:textColor="@color/colorPrimary"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/image_userportal_profile"
+        app:layout_constraintStart_toStartOf="@+id/image_userportal_profile"
+        app:layout_constraintTop_toBottomOf="@+id/image_userportal_profile" />
 
     <TextView
         android:id="@+id/tv_local_demo"
@@ -122,20 +139,11 @@
         app:layout_constraintStart_toEndOf="@+id/tv_select_review_version_text"
         app:layout_constraintTop_toBottomOf="@+id/tv_select_review_text" />
 
-    <View
-        android:id="@+id/divider_top"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="16dp"
-        android:background="@color/colorBlack"
-        app:layout_constraintTop_toBottomOf="@+id/review_title_chooser"
-        tools:layout_editor_absoluteX="0dp" />
-
     <TextView
         android:id="@+id/tv_new_review"
         android:layout_width="350dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
+        android:layout_marginTop="35dp"
         android:background="#CCFFFFFF"
         android:fontFamily="@font/antic"
         android:text="Start a New Review"
@@ -143,7 +151,7 @@
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/divider_top" />
+        app:layout_constraintTop_toBottomOf="@+id/review_title_chooser" />
 
     <Button
         android:id="@+id/button_choose_pdf"
@@ -203,28 +211,20 @@
         app:layout_constraintStart_toStartOf="@+id/tv_review_title_text"
         app:layout_constraintTop_toBottomOf="@+id/tv_review_title_text" />
 
-    <View
-        android:id="@+id/divider_bottom"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="16dp"
-        android:background="@color/colorBlack"
-        app:layout_constraintTop_toBottomOf="@+id/editTextReviewTitle"
-        tools:layout_editor_absoluteX="16dp" />
-
     <TextView
         android:id="@+id/tv_selected_review_text"
-        android:layout_width="200dp"
+        android:layout_width="350dp"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="185dp"
         android:background="#CCFFFFFF"
         android:fontFamily="@font/antic"
-        android:gravity="center_horizontal"
+        android:gravity="right"
         android:text="Selected Review"
         android:textColor="@color/colorBlack"
         android:textSize="20sp"
         android:textStyle="bold"
-        app:layout_constraintTop_toBottomOf="@+id/divider_bottom"
-        tools:layout_editor_absoluteX="125dp" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
         android:id="@+id/tv_selected_review_title"

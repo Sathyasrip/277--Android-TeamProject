@@ -1,5 +1,7 @@
 package com.example.teamproject.ui;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -7,16 +9,22 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
-
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.viewpager.widget.ViewPager;
-
 import com.example.teamproject.R;
+import com.example.teamproject.model.AppThemes;
+import com.example.teamproject.model.ProfileSettings;
 import com.example.teamproject.model.ReviewPageAdapter;
 import com.google.android.material.tabs.TabLayout;
 
 public class ReviewActivity extends AppCompatActivity {
+    ProfileSettings CurrentUser;
+    AppThemes AvailableThemes;
+    int ThemeID;
 
+    private ConstraintLayout ThisLayout;
     private Button SaveChanges;
     private Spinner version_dropdown;
     private String[] sample_versions = {"Version 1", "Version 2", "Version 3"};
@@ -26,7 +34,18 @@ public class ReviewActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_review);
+        setContentView(R.layout.start_review);
+
+        Intent i = getIntent();
+        CurrentUser = (ProfileSettings) i.getSerializableExtra("UserProfile");
+
+        /*****************************************************************
+         *  Change the Background that was selected by the theme_dropdown
+         *****************************************************************/
+        ThisLayout = (ConstraintLayout) findViewById(R.id.startreview_layout);
+        ThemeID = CurrentUser.Theme();
+        AvailableThemes = new AppThemes(ThemeID);
+        ThisLayout.setBackground(ContextCompat.getDrawable(getApplicationContext(), AvailableThemes.GetTheme()));
 
         /***************************************************************
          *  Configure the dropdown to show all versions of the Review
@@ -42,11 +61,12 @@ public class ReviewActivity extends AppCompatActivity {
         SaveChanges.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: Launch UserPortal after performing the edits.
-                Intent DemoMenuIntent = new Intent(
+                // TODO: Update Firebase entries and go back to the User Portal.
+                Intent UserPortalIntent = new Intent(
                         ReviewActivity.this,
                         UserPortal.class);
-                startActivity(DemoMenuIntent);
+                UserPortalIntent.putExtra("UserProfile", CurrentUser);
+                startActivity(UserPortalIntent);
             }
         });
 
@@ -84,4 +104,40 @@ public class ReviewActivity extends AppCompatActivity {
         viewPager.setOffscreenPageLimit(2); // Required to refresh the tabs.
         viewPager.setAdapter(viewPagerAdapter);
     }
-}
+
+    public void SaveChangesDialog() {
+        String title = "Cancel Edits";
+        String dialog_message = "By continuing, your edits will be lost. Click Save Changes button to save your progress.";
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(dialog_message).setTitle(title);
+
+        // If the user chooses to press "Yes", only then, return to login screen.
+        // TODO: Remove last user login entry from SQL Database.
+        builder.setPositiveButton("Goto User Portal", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // If the user is an elevated user/reviewer, you can see and click the icon.
+                Intent UserPortalIntent = new Intent(
+                        ReviewActivity.this,
+                        UserPortal.class);
+                startActivity(UserPortalIntent);
+                finish();
+            }
+        });
+
+        // If the user chooses "No", just dismiss the dialog box.
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.dismiss();
+            }
+        });
+
+        // Finally display the Alert Dialog.
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    @Override
+    public void onBackPressed() {
+        SaveChangesDialog();
+    }}

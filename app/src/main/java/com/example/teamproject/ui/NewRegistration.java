@@ -7,26 +7,39 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.teamproject.R;
+import com.example.teamproject.model.FirebaseUserProfile;
+import com.example.teamproject.model.ProfileSettings;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 
 public class NewRegistration extends AppCompatActivity {
-
     private ImageView GoBackIcon;
     private Button Registration;
     private EditText EmailAddress, UserName, Password, ConfirmPassword, FullName, Credentials;
     private TextView EmailError, UserNameError, PasswordError, ConfirmPasswordError;
     private String email_address, username, password, confirm_password, fullname, credentials;
+    private String account_type = "standard";
     private ArrayList<String> user_emails = new ArrayList<String>();
     private ArrayList<String> user_logins = new ArrayList<String>();
     private Boolean email_error = false, duplicate_user = false, invalid_password = false,
             non_matching_passwords = false;
     private ArrayList<Boolean> filled_fields = new ArrayList<Boolean>();
 
+    // Firebase Authentication
+    private FirebaseAuth mAuth;
+    private DatabaseReference mDatabase;
 
     private void UpdateRegistrationButton() {
         Registration = (Button) findViewById(R.id.button_save_registration);
@@ -48,6 +61,11 @@ public class NewRegistration extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_registration);
 
+        // Firebase authentication.
+        mAuth = FirebaseAuth.getInstance();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+
+        // Define all views.
         GoBackIcon = (ImageView) findViewById(R.id.image_registration_go_back);
         Registration = (Button) findViewById(R.id.button_save_registration);
         EmailAddress = (EditText) findViewById(R.id.editTextRegisterEmail);
@@ -65,9 +83,7 @@ public class NewRegistration extends AppCompatActivity {
          * TODO: Use an SQL Query or NoSQL Query to get a list of user logins & email accounts.
          **************************************************************************************/
         user_emails.add(LoginScreen.TestAccount[2]);
-        user_emails.add(LoginScreen.AdminAccount[2]);
         user_logins.add(LoginScreen.TestAccount[0]);
-        user_logins.add(LoginScreen.AdminAccount[0]);
 
 
         /**********************************************************************
@@ -261,12 +277,41 @@ public class NewRegistration extends AppCompatActivity {
         Registration.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: Save the data provided in the EditText to the database & return to login.
-                Intent LoginIntent = new Intent(
-                        NewRegistration.this,
-                        LoginScreen.class);
-                startActivity(LoginIntent);
-                finish();
+                // Do a firebase authentication.
+                mAuth.createUserWithEmailAndPassword(email_address, password)
+                        .addOnCompleteListener(NewRegistration.this, new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                // If sign in fails, display a message to the user. If sign in succeeds
+                                // the auth state listener will be notified and logic to handle the
+                                // signed in user can be handled in the listener.
+                                if (!task.isSuccessful()) {
+                                    Toast.makeText(NewRegistration.this, "Authentication failed." + task.getException(),
+                                            Toast.LENGTH_SHORT).show();
+                                } else {
+                                    String user_uuid = task.getResult().getUser().getUid();
+                                    Toast.makeText(NewRegistration.this, user_uuid, Toast.LENGTH_SHORT).show();
+                                    mDatabase.child("user_profiles").child(user_uuid).child("account_type").setValue(account_type);
+                                    mDatabase.child("user_profiles").child(user_uuid).child("credentials").setValue(credentials);
+                                    mDatabase.child("user_profiles").child(user_uuid).child("email").setValue(email_address);
+                                    mDatabase.child("user_profiles").child(user_uuid).child("full_name").setValue(fullname);
+                                    mDatabase.child("user_profiles").child(user_uuid).child("picture").setValue("na");
+                                    mDatabase.child("user_profiles").child(user_uuid).child("username").setValue(username);
+                                    mDatabase.child("user_profiles").child(user_uuid).child("theme_id").setValue((long) 0);
+
+                                    // Test if sign out works.
+                                    mAuth.signOut();
+
+                                    // After the profile was successfully created, we should now leave the activity.
+                                    Intent LoginIntent = new Intent(
+                                            NewRegistration.this,
+                                            LoginScreen.class);
+                                    //Toast.makeText(NewRegistration.this, "Registration successful.", Toast.LENGTH_SHORT).show();
+                                    startActivity(LoginIntent);
+                                    finish();
+                                }
+                            }
+                        });
             }
         });
     }

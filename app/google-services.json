@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "639792862420",
+    "firebase_url": "https://academiabeta-f8813.firebaseio.com",
+    "project_id": "academiabeta-f8813",
+    "storage_bucket": "academiabeta-f8813.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:639792862420:android:913f72bc67137580929741",
+        "android_client_info": {
+          "package_name": "com.example.teamproject"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "639792862420-sp6bp3h2q8t6cc5qa8nt05vhstr2lb7g.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHM8YWzt_IrcfJUR1MsMgSjz485nRsXJE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "639792862420-sp6bp3h2q8t6cc5qa8nt05vhstr2lb7g.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
