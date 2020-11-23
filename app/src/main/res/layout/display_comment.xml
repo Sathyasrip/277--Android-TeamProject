@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/layout_comment_row"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center|left"
     android:background="#CCFFFFFF">
-
 
     <Button
         android:id="@+id/button_comment"
         android:layout_width="370dp"
         android:layout_height="wrap_content"
         android:background="@drawable/comment_bubble"
+        android:focusable="false"
         android:fontFamily="@font/antic"
         android:gravity="center|left"
+        android:onClick="ButtonClickHandler"
         android:paddingLeft="10dp"
         android:paddingTop="5dp"
         android:paddingRight="10dp"
@@ -22,23 +24,32 @@
         android:textAllCaps="false"
         android:textColor="@color/colorBlack"
         android:textSize="20sp"
-        app:layout_constraintStart_toStartOf="@+id/comment_fullname"
+        app:layout_constraintStart_toStartOf="@+id/comment_number"
         app:layout_constraintTop_toBottomOf="@+id/comment_fullname" />
 
+    <TextView
+        android:id="@+id/comment_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/antic"
+        android:text="#1"
+        android:textColor="@color/colorPrimary"
+        app:layout_constraintBottom_toTopOf="@+id/button_comment"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/comment_fullname" />
 
     <TextView
         android:id="@+id/comment_fullname"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="5dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginTop="5dp"
         android:fontFamily="@font/antic"
         android:text="John Doe"
         android:textColor="@color/colorPrimary"
         android:textSize="20sp"
         android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/button_comment"
+        app:layout_constraintHorizontal_bias="0.506"
+        app:layout_constraintStart_toStartOf="@+id/button_comment"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -50,9 +61,9 @@
         android:textColor="@color/colorPrimaryDark"
         android:textSize="15sp"
         android:textStyle="bold|italic"
-        app:layout_constraintBottom_toBottomOf="@+id/comment_fullname"
+        app:layout_constraintBottom_toBottomOf="@+id/comment_number"
         app:layout_constraintEnd_toEndOf="@+id/button_comment"
-        app:layout_constraintTop_toTopOf="@+id/comment_fullname" />
+        app:layout_constraintTop_toTopOf="@+id/comment_number" />
 
     <TextView
         android:id="@+id/comment_datetime"

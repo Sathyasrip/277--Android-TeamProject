@@ -1,7 +1,125 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/deletereview_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/nightsky_theme">
+
+    <ImageView
+        android:id="@+id/image_deletereview_go_back"
+        android:layout_width="71dp"
+        android:layout_height="60dp"
+        android:focusable="auto"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/icon_go_back" />
+
+    <TextView
+        android:id="@+id/tv_deletereview_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="70dp"
+        android:background="#CCFFFFFF"
+        android:fontFamily="@font/antic"
+        android:text="Delete an Existing Review"
+        android:textColor="@color/colorBlack"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_deletereview_select_review_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:background="#CCFFFFFF"
+        android:fontFamily="@font/antic"
+        android:text="1. Select a Review Title"
+        android:textColor="@color/colorBlack"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_deletereview_header" />
+
+    <Spinner
+        android:id="@+id/deletereview_review_title_chooser"
+        android:layout_width="250dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="16dp"
+        android:background="@color/colorReviewLight"
+        android:clickable="true"
+        android:focusable="true"
+        android:foregroundGravity="center"
+        android:gravity="center"
+        android:prompt="@string/version_prompt"
+        android:spinnerMode="dropdown"
+        app:layout_constraintEnd_toEndOf="@+id/tv_deletereview_select_review_title"
+        app:layout_constraintStart_toStartOf="@+id/tv_deletereview_select_review_title"
+        app:layout_constraintTop_toBottomOf="@+id/tv_deletereview_select_review_title" />
+
+    <Switch
+        android:id="@+id/switch_delete_whole_review"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="#CCFFFFFF"
+        android:fontFamily="@font/antic"
+        android:text='"Purge entire review"'
+        android:textColor="@color/colorBlack"
+        android:textSize="17sp"
+        app:layout_constraintEnd_toEndOf="@+id/deletereview_review_title_chooser"
+        app:layout_constraintStart_toStartOf="@+id/deletereview_review_title_chooser"
+        app:layout_constraintTop_toBottomOf="@+id/deletereview_review_title_chooser" />
+
+    <TextView
+        android:id="@+id/tv_deletereview_select_review_version"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:background="#CCFFFFFF"
+        android:fontFamily="@font/antic"
+        android:text="2. Choose Version"
+        android:textColor="@color/colorBlack"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/deletereview_review_title_chooser"
+        app:layout_constraintStart_toStartOf="@+id/deletereview_review_title_chooser"
+        app:layout_constraintTop_toBottomOf="@+id/switch_delete_whole_review" />
+
+    <Spinner
+        android:id="@+id/deletereview_review_version_chooser"
+        android:layout_width="100dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="8dp"
+        android:background="@color/colorReviewLight"
+        android:clickable="true"
+        android:focusable="true"
+        android:foregroundGravity="center"
+        android:gravity="center"
+        android:prompt="@string/version_prompt"
+        android:spinnerMode="dropdown"
+        app:layout_constraintEnd_toEndOf="@+id/tv_deletereview_select_review_version"
+        app:layout_constraintStart_toStartOf="@+id/tv_deletereview_select_review_version"
+        app:layout_constraintTop_toBottomOf="@+id/tv_deletereview_select_review_version" />
+
+    <Button
+        android:id="@+id/button_delete_review"
+        style="@android:style/Widget.Button"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="40dp"
+        android:enabled="true"
+        android:fontFamily="@font/antic"
+        android:text="@string/delete_review_button"
+        android:textAllCaps="false"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

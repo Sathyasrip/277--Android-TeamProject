@@ -10,8 +10,10 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,6 +30,7 @@ import androidx.room.Delete;
 
 import com.example.teamproject.R;
 import com.example.teamproject.model.AppThemes;
+import com.example.teamproject.model.CircularImageTransform;
 import com.example.teamproject.model.ProfileSettings;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -39,24 +42,23 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
-
 import org.w3c.dom.Text;
+
+import java.util.UUID;
 
 public class UserPortal extends AppCompatActivity {
     ProfileSettings CurrentUser;
     AppThemes AvailableThemes;
     int ThemeID;
 
-    Boolean DebugMode = true;
-    Boolean ElevatedUser = false; // Used to control what buttons are available or not?
-
     private ConstraintLayout ThisLayout;
     private Button StartReview, SelectPDF;
     private EditText ReviewTitle;
-    private TextView SelectedTitle, SelectedVersion, SelectedPDF, AccountType;
+    private TextView SelectedTitle, SelectedVersion, SelectedPDF, AccountType, UploadStatus;
     private ImageView ProfileIcon, GoBackIcon, DeleteReviewIcon;
     private Spinner review_title_chooser, review_version_chooser;
-    private String[] existing_reviews, existing_versions;
+    private String[] existing_reviews = new String[0]; // empty
+    private String[] existing_versions = new String[0]; // empty
     private String[] test_reviews = {"Stem Cell IEEE", "Part Datasheet", "COVID19 Report"};
     private String[] test_versions = {"1", "2", "3"};
 
@@ -65,36 +67,27 @@ public class UserPortal extends AppCompatActivity {
     final static int PICK_PDF_CODE = 2342;
     StorageReference mStorageReference;
     DatabaseReference mDatabaseReference;
+    Uri pdf_file;
+    String review_title="", review_version="1", review_uuid;
+    Boolean[] required_upload_flags = {false, false, false};
+    Boolean new_review_flag = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_portal);
 
-        // Firebase
+        /***************************
+         *  Firebase Authentication.
+         ***************************/
         mAuth = FirebaseAuth.getInstance();
         //getting firebase objects
         mStorageReference = FirebaseStorage.getInstance().getReference();
-        mDatabaseReference = FirebaseDatabase.getInstance().getReference(Constants.DATABASE_PATH_UPLOADS);
+        mDatabaseReference = FirebaseDatabase.getInstance().getReference();
 
-        /**********************************************************************
-        *  Retrieve the Intent containing the User Profile data from Firebase.
-        **********************************************************************/
-        Intent i = getIntent();
-        CurrentUser = (ProfileSettings) i.getSerializableExtra("UserProfile");
-
-        // TODO: Load the dropdown based on Firebase NoSQL Database entries.
-        if (DebugMode) {
-            existing_reviews = test_reviews;
-            existing_versions = test_versions;
-        }
-        review_title_chooser = (Spinner) findViewById(R.id.review_title_chooser);
-        review_version_chooser = (Spinner) findViewById(R.id.review_version_chooser);
-        ArrayAdapter<String> adpter1 = new ArrayAdapter<String> (UserPortal.this, R.layout.review_spinner, existing_reviews);
-        ArrayAdapter<String> adpter2 = new ArrayAdapter<String> (UserPortal.this, R.layout.review_spinner, existing_versions);
-        review_title_chooser.setAdapter(adpter1);
-        review_version_chooser.setAdapter(adpter2);
-
-        // These are all the views
+        /*************************
+         *  Link up all the views
+         *************************/
         ThisLayout = (ConstraintLayout) findViewById(R.id.userportal_layout);
         GoBackIcon = (ImageView) findViewById(R.id.image_userportal_go_back);
         DeleteReviewIcon = (ImageView) findViewById(R.id.image_userportal_delete_review);
@@ -106,6 +99,19 @@ public class UserPortal extends AppCompatActivity {
         SelectedTitle = (TextView) findViewById(R.id.tv_selected_review_title);
         SelectedVersion = (TextView) findViewById(R.id.tv_selected_review_version);
         StartReview = (Button) findViewById(R.id.button_start_review);
+        UploadStatus = (TextView) findViewById(R.id.tv_upload_status);
+
+        StartReview.setEnabled(false);
+        /**********************************************************************
+        *  Retrieve the Intent containing the User Profile data from Firebase.
+        **********************************************************************/
+        Intent i = getIntent();
+        CurrentUser = (ProfileSettings) i.getSerializableExtra("UserProfile");
+
+        /************************
+         *  Update the spinners
+         ************************/
+        RetrieveFirebaseReviews();
 
         /*****************************************************************
          *  Change the Background that was selected by the theme_dropdown
@@ -117,7 +123,6 @@ public class UserPortal extends AppCompatActivity {
         /*****************************
          * Load the profile picture.
          *****************************/
-        //Toast.makeText(getApplicationContext(), CurrentUser.GetLocalProfilePicture(), Toast.LENGTH_SHORT).show();
         LoadProfilePicture(ProfileIcon, CurrentUser.GetLocalProfilePicture());
 
         /*****************************
@@ -158,34 +163,48 @@ public class UserPortal extends AppCompatActivity {
                     Intent DeletingReviewIntent = new Intent(
                             UserPortal.this,
                             DeletingReview.class);
+                    DeletingReviewIntent.putExtra("UserProfile", CurrentUser);
                     startActivity(DeletingReviewIntent);
                 }
             });
 
             /**************************************************************************
-             * TODO: Sathya
-             * These two buttons will interact with File Manager or FireBase to
-             * download the PDF (as version 1) under main/res/raw/review_doc.pdf.
-             *
-             * When uploading to the Cloud or storing locally under main/res/raw,
-             * any name may be used as long as it is added into some database to pull
-             * from.
+             * Clicking SelectPDF will pull the file chooser and update the text view.
              *************************************************************************/
             SelectPDF.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // TODO: Open File Manager to choose the file (to upload/download).
-                   // Toast.makeText(getApplicationContext(), "Select PDF", Toast.LENGTH_SHORT).show();
                     getPDF();
                 }
             });
 
-            /**************************************************************************
-             * When the user chooses a project (new or existing) open ReviewActivity.
-             *
-             * NOTE: The data references must be updated and passed to the
-             * ReviewActivity.
-             *************************************************************************/
+            /*****************************************************************
+             * When the User successfully types something into the EditText,
+             * Generate the UUID for the Review as well.
+             ****************************************************************/
+            ReviewTitle.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                                                      @Override
+                                                      public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                                                          if (actionId == EditorInfo.IME_ACTION_DONE) {
+                                                              review_title = ReviewTitle.getText().toString();
+                                                              review_uuid = UUID.randomUUID().toString().replace("-","");
+                                                              Toast.makeText(getApplicationContext(), "UUID: " + review_uuid, Toast.LENGTH_SHORT).show();
+
+                                                              // Change the title and version text views.
+                                                              SelectedTitle.setText(review_title);
+                                                              SelectedVersion.setText("1");
+
+                                                              // Enable the Start Review button if all criteria is met.
+                                                              required_upload_flags[1] = true;
+                                                              if(required_upload_flags[0] && required_upload_flags[1]) {
+                                                                  StartReview.setEnabled(true);
+                                                              }
+
+                                                              return true;
+                                                          }
+                                                          return false;
+                                                      }
+                                                  });
         } else {
             // If the user is a standard user, don't show any of the views for making/editing Reviews.
             TextView StartReviewHeader = (TextView) findViewById(R.id.tv_new_review);
@@ -202,18 +221,28 @@ public class UserPortal extends AppCompatActivity {
         StartReview.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: Launch ReviewActivity after adding in the appropriate extras.
-                Intent ReviewIntent = new Intent(
-                        UserPortal.this,
-                        ReviewActivity.class);
-                ReviewIntent.putExtra("UserProfile", CurrentUser);
-                startActivity(ReviewIntent);
+                // TODO: firebase
+                if (CurrentUser.AccountType().equals("reviewer")) {
+                    // Ensure all required fields are set, before attempting to upload the file.
+                    if(required_upload_flags[0] && required_upload_flags[1]) {
+                        uploadReview(pdf_file, review_uuid, review_version, new_review_flag);
+                        Toast.makeText(getApplicationContext(), "Check Firebase!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Please input all required fields!", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Intent ReviewIntent = new Intent(
+                            UserPortal.this,
+                            StartTheReview.class);
+                    ReviewIntent.putExtra("UserProfile", CurrentUser);
+                    startActivity(ReviewIntent);
+                }
             }
         });
     }
 
     private void getPDF() {
-        
+        // First check permissions for the file manager.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && ContextCompat.checkSelfPermission(this,
                 Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -223,44 +252,48 @@ public class UserPortal extends AppCompatActivity {
             return;
         }
 
-        //creating an intent for file chooser
+        // Create an intent to choose the file.
         Intent intent = new Intent();
         intent.setType("application/pdf");
         intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_PDF_CODE);
+        startActivityForResult(Intent.createChooser(intent, "Select PDF"), PICK_PDF_CODE);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        //when the user choses the file
+        // When the user chooses the file
         if (requestCode == PICK_PDF_CODE && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            //if a file is selected
+            // if a file is selected
             if (data.getData() != null) {
-                //uploading the file
-                uploadFile(data.getData());
-            }else{
+                pdf_file = data.getData();
+                SelectedPDF.setText(pdf_file.getPath());
+
+                required_upload_flags[0] = true;
+                if(required_upload_flags[0] && required_upload_flags[1]) {
+                    StartReview.setEnabled(true);
+                }
+            } else{
                 Toast.makeText(this, "No file chosen", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-
-    //this method is uploading the file
-
-    private void uploadFile(Uri data) {
-       // progressBar.setVisibility(View.VISIBLE);
-        StorageReference sRef = mStorageReference.child(Constants.STORAGE_PATH_UPLOADS + System.currentTimeMillis() + ".pdf");
+    /******************************************
+     *  Uploads the file to Firebase Storage.
+     *****************************************/
+    private void uploadFile(Uri data, String review_uuid, String version) {
+        // Upload the file to the Firebase.
+        StorageReference sRef = mStorageReference.child("pdfs/" + review_uuid + "_v" + version + ".pdf");
         sRef.putFile(data)
                 .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @SuppressWarnings("VisibleForTests")
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                       // progressBar.setVisibility(View.GONE);
-                        SelectedPDF.setText("File Uploaded Successfully");
+                        UploadStatus.setText("File Uploaded Successfully");
+                        required_upload_flags[2] = true;
 
-                        Upload upload = new Upload(ReviewTitle.getText().toString(), taskSnapshot.getMetadata().getReference().getDownloadUrl().toString());
-                        mDatabaseReference.child(mDatabaseReference.push().getKey()).setValue(upload);
+                        // Now make a whole list of entries in Firebase for the review.
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -274,12 +307,36 @@ public class UserPortal extends AppCompatActivity {
                     @Override
                     public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
                         double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
-                        SelectedPDF.setText((int) progress + "% Uploading...");
+                        UploadStatus.setText((int) progress + "% Uploading...");
                     }
                 });
 
     }
 
+    /***************************************************************
+     *  Uploads Realtime Database entries and uploads the PDF file.
+     ***************************************************************/
+    private void uploadReview(Uri data, String review_uuid, String version, Boolean new_review) {
+        String firebase_pdf_file = review_uuid + "_v" + version + ".pdf";
+
+        // Uploads the PDF on Firebase storage.
+        uploadFile(data, review_uuid, version);
+
+        if (new_review) {
+            // Adds all the required first-time entries into the database.
+            mDatabaseReference.child("open_reviews").child(review_uuid).child("latest_version").setValue((long) Integer.parseInt(version));
+            mDatabaseReference.child("open_reviews").child(review_uuid).child("owner").setValue(CurrentUser.Username());
+            mDatabaseReference.child("open_reviews").child(review_uuid).child("title").setValue(review_title);
+            mDatabaseReference.child("open_reviews").child(review_uuid).child("read_only").setValue(false);
+            mDatabaseReference.child("open_reviews").child(review_uuid).child("viewable").setValue(true);
+        }
+        // Now just add the new version entry into the database.
+        mDatabaseReference.child("open_reviews").child(review_uuid).child("versions").child(version).child("pdf").setValue(firebase_pdf_file);
+    }
+
+    /***********************
+     *  Logout Dialog box.
+     ***********************/
     public void LogoutDialog() {
         String title = "Account Logout";
         String dialog_message = "Do you want to logout?";
@@ -317,7 +374,23 @@ public class UserPortal extends AppCompatActivity {
      * Use Picasso to load the image from a URL into the ImageView.
      ***************************************************************/
     public void LoadProfilePicture(ImageView image_view, String image_url) {
-        Picasso.get().load(image_url).fit().centerCrop().into(image_view);
+        Picasso.get().load(image_url).transform(new CircularImageTransform()).fit().into(image_view);
+    }
+
+    /**************************************
+     * Returns Firebase review versions.
+     *************************************/
+    public void RetrieveFirebaseReviews() {
+        // TODO: Read back all the firebase review versions.
+        existing_reviews = test_reviews;
+        existing_versions = test_versions;
+
+        review_title_chooser = (Spinner) findViewById(R.id.review_title_chooser);
+        review_version_chooser = (Spinner) findViewById(R.id.review_version_chooser);
+        ArrayAdapter<String> adpter1 = new ArrayAdapter<String> (UserPortal.this, R.layout.review_spinner, existing_reviews);
+        ArrayAdapter<String> adpter2 = new ArrayAdapter<String> (UserPortal.this, R.layout.review_spinner, existing_versions);
+        review_title_chooser.setAdapter(adpter1);
+        review_version_chooser.setAdapter(adpter2);
     }
 
     @Override

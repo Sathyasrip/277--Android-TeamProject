@@ -7,8 +7,9 @@
     android:background="@drawable/nightsky_theme">
 
 
-    <TextView
-        android:id="@+id/tv_project_title"
+    <EditText
+        android:id="@+id/editTextStartReviewTitle"
+        android:ems="10"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
@@ -35,10 +36,10 @@
         android:gravity="center"
         android:prompt="@string/version_prompt"
         android:spinnerMode="dropdown"
-        app:layout_constraintEnd_toEndOf="@+id/tv_project_title"
+        app:layout_constraintEnd_toEndOf="@+id/editTextStartReviewTitle"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/tv_project_title"
-        app:layout_constraintTop_toBottomOf="@+id/tv_project_title" />
+        app:layout_constraintStart_toStartOf="@+id/editTextStartReviewTitle"
+        app:layout_constraintTop_toBottomOf="@+id/editTextStartReviewTitle" />
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/review_tabs"

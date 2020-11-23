@@ -3,8 +3,10 @@
     package="com.example.teamproject">
     <!-- All permissions for PDFTron to be usable. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- All permissions for StorageProvider class (Selecting a PDF file). -->
 
     <application
         android:name="androidx.multidex.MultiDexApplication"
@@ -42,7 +44,7 @@
             android:name=".ui.DeletingReview"
             android:theme="@style/Theme.AppCompat.NoActionBar"/>
         <activity
-            android:name=".ui.ReviewActivity"
+            android:name=".ui.StartTheReview"
             android:theme="@style/CustomAppTheme"
             android:windowSoftInputMode="adjustPan" /> <!-- Custom fonts for our app -->
         <meta-data

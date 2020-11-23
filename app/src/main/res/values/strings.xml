@@ -28,7 +28,8 @@
     <string name="project_title">IEEE Article</string>
     <string name="version_prompt">Document Version</string>
     <string name="button_save_document">Save Changes</string>
-    <string name="demo_title">Review Portal</string>
+    <string name="review_activity_header">Review Portal</string>
+    <string name="delete_review_button">Delete Review</string>
 
     <string-array name="themes">
         <item>Night Sky (Default)</item>

@@ -1,5 +1,10 @@
 package com.example.teamproject.model;
 
+import android.content.ContentResolver;
+import android.content.Context;
+import android.net.Uri;
+import android.webkit.MimeTypeMap;
+
 import java.io.Serializable;
 
 // Used to Store information about the Current User Profile
@@ -13,8 +18,8 @@ public class ProfileSettings implements Serializable {
     public ProfileSettings(String firebase_auth_uuid, String firebase_profile_picture_name,
                            String full_name, String email, String username, String credentials,
                            String account_type, int theme_id) {
-        this.firebase_profile_picture_name = firebase_profile_picture_name;
         this.existing_firebase_profile_picture_name = firebase_profile_picture_name;
+        this.firebase_profile_picture_name = "";  // To be filled in UserProfile.java.
         this.firebase_auth_uuid = firebase_auth_uuid;
         this.full_name = full_name;
         this.email = email;
@@ -22,6 +27,10 @@ public class ProfileSettings implements Serializable {
         this.credentials = credentials;
         this.account_type = account_type;
         this.theme_id = theme_id;
+    }
+
+    public String UUID() {
+        return firebase_auth_uuid;
     }
 
     public String FullName() {
@@ -51,17 +60,21 @@ public class ProfileSettings implements Serializable {
     }
 
     public String GetFirebaseProfilePicture() {
-        String firebase_profile_picture = "gs://academiabeta-f8813.appspot.com/profile_pictures/" + this.firebase_profile_picture_name;
+        String firebase_profile_picture = "/profile_pictures/" + this.firebase_profile_picture_name;
         return firebase_profile_picture;
     }
 
     public String GetExistingFirebaseProfilePicture() {
-        String firebase_profile_picture = "gs://academiabeta-f8813.appspot.com/profile_pictures/" + this.existing_firebase_profile_picture_name;
+        String firebase_profile_picture = "/profile_pictures/" + this.existing_firebase_profile_picture_name;
         return firebase_profile_picture;
     }
 
     public String GetLocalProfilePicture() {
         return this.new_picture_location;
+    }
+
+    public String GetFirebaseProfilePictureName() {
+        return this.firebase_profile_picture_name;
     }
 
     public void SetFullName(String full_name) {
@@ -83,6 +96,14 @@ public class ProfileSettings implements Serializable {
         this.theme_id = theme_id;
     }
 
+    public void SetFirebaseProfilePictureNameUri(Context context, Uri photo) {
+        ContentResolver cR = context.getContentResolver();
+        MimeTypeMap mime = MimeTypeMap.getSingleton();
+        String extension = mime.getExtensionFromMimeType(cR.getType(photo));
+
+        this.firebase_profile_picture_name = this.firebase_auth_uuid + "." + extension;
+    }
+
     public void SetFirebaseProfilePictureName(String new_picture_location) {
         String[] segments = new_picture_location.split("[.]");
         this.firebase_profile_picture_name = this.firebase_auth_uuid + "." + segments[segments.length -1];
@@ -92,5 +113,11 @@ public class ProfileSettings implements Serializable {
         // By default, we expect this to be empty. This is the file to replace profile picture.
         this.new_picture_location = new_picture_location;
         SetFirebaseProfilePictureName(this.new_picture_location);
+    }
+
+    public String GetFirebasePublicUrl(String encoded_firebase_path) {
+        String firebase_public_header = "https://firebasestorage.googleapis.com";
+        String firebase_access_footer = "?alt=media";
+        return firebase_public_header + encoded_firebase_path + firebase_access_footer;
     }
 }

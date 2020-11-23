@@ -290,12 +290,12 @@ public class NewRegistration extends AppCompatActivity {
                                             Toast.LENGTH_SHORT).show();
                                 } else {
                                     String user_uuid = task.getResult().getUser().getUid();
-                                    Toast.makeText(NewRegistration.this, user_uuid, Toast.LENGTH_SHORT).show();
+                                    //Toast.makeText(NewRegistration.this, user_uuid, Toast.LENGTH_SHORT).show();
                                     mDatabase.child("user_profiles").child(user_uuid).child("account_type").setValue(account_type);
                                     mDatabase.child("user_profiles").child(user_uuid).child("credentials").setValue(credentials);
                                     mDatabase.child("user_profiles").child(user_uuid).child("email").setValue(email_address);
                                     mDatabase.child("user_profiles").child(user_uuid).child("full_name").setValue(fullname);
-                                    mDatabase.child("user_profiles").child(user_uuid).child("picture").setValue("na");
+                                    mDatabase.child("user_profiles").child(user_uuid).child("picture").setValue("no_photo.png");
                                     mDatabase.child("user_profiles").child(user_uuid).child("username").setValue(username);
                                     mDatabase.child("user_profiles").child(user_uuid).child("theme_id").setValue((long) 0);
 

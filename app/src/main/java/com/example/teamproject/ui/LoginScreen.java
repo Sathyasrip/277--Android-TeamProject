@@ -2,8 +2,11 @@ package com.example.teamproject.ui;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -12,6 +15,7 @@ import android.widget.Toast;
 import com.example.teamproject.R;
 import com.example.teamproject.model.ProfileSettings;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -20,23 +24,21 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 public class LoginScreen extends AppCompatActivity {
-
-    String[] AccountType = {"standard", "reviewer", "moderator"};
-    static ProfileSettings CurrentUser = new ProfileSettings();
-
     private ProgressBar progressBar;
     private Button ButtonLogin;
     private TextView ClickToRegister;
     private EditText EditTextUserName, EditTextUserPassword;
-    private String username = "", password = "", accountType = "", accountUser = "";
+    private String username = "", password = "";
 
     // Firebase Authentication
     static String[] TestAccount = {"academia", "test1234", "academia.tester1@gmail.com"};
     private FirebaseAuth mAuth;
+    private StorageReference storageRef;
     private DatabaseReference mDatabase;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,22 +47,8 @@ public class LoginScreen extends AppCompatActivity {
 
         // Initialize the Firebase authenticator & Database
         mAuth = FirebaseAuth.getInstance();
+        storageRef = FirebaseStorage.getInstance().getReference();
         mDatabase = FirebaseDatabase.getInstance().getReference();
-
-        if (mAuth.getCurrentUser() != null) {
-            String user_uuid = mAuth.getCurrentUser().getUid();
-            GetFirebaseUserProfile(user_uuid);
-
-            //CurrentUser = GetTestUserProfile();
-            // Pass the user profile to the User Portal activity to display some actions.
-            //Intent LoginScreenIntent = new Intent(
-            //        LoginScreen.this,
-            //        UserPortal.class);
-            //LoginScreenIntent.putExtra("UserProfile", CurrentUser);
-            //Toast.makeText(LoginScreen.this, "Welcome Back! " + CurrentUser.FullName(), Toast.LENGTH_SHORT).show();
-            //startActivity(LoginScreenIntent);
-            //finish();
-        }
 
         // Initialize all the views on the layout.
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
@@ -72,19 +60,48 @@ public class LoginScreen extends AppCompatActivity {
         /*******************************************************
          * Check if the user entered the username and password.
          *******************************************************/
+        EditTextUserName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                                                       @Override
+                                                       public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                                                           username = String.valueOf(EditTextUserName.getText());
+                                                           if (actionId == EditorInfo.IME_ACTION_DONE) {
+                                                               if (!username.equals("") && !password.equals("")) {
+                                                                   // Enable the Login Button.
+                                                                   ButtonLogin.setEnabled(true);
+                                                               }
+                                                                return true;
+                                                           } else {
+                                                               return false;
+                                                           }
+                                                       }
+                                                   });
         EditTextUserName.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 // When focus is lost check that the text field has valid values.
                 username = String.valueOf(EditTextUserName.getText());
+            }
+        });
+        EditTextUserPassword.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 password = String.valueOf(EditTextUserPassword.getText());
-
-                if (!hasFocus) {
-                    if (username != "" && password != "") {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    if (!username.equals("") && !password.equals("")) {
                         // Enable the Login Button.
                         ButtonLogin.setEnabled(true);
                     }
+                    return true;
+                } else {
+                    return false;
                 }
+            }
+        });
+        EditTextUserPassword.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                // When focus is lost check that the text field has valid values.
+                password = String.valueOf(EditTextUserPassword.getText());
             }
         });
 
@@ -129,18 +146,8 @@ public class LoginScreen extends AppCompatActivity {
                                         }
                                     } else {
                                         // Before logging in, load the profile.
-                                        // TODO: Get the profile information from firebase.
                                         String user_uuid = mAuth.getCurrentUser().getUid();
                                         GetFirebaseUserProfile(user_uuid);
-                                        //CurrentUser = GetTestUserProfile();
-                                        // Pass the user profile to the User Portal activity to display some actions.
-                                        //Intent LoginScreenIntent = new Intent(
-                                        //        LoginScreen.this,
-                                        //        UserPortal.class);
-                                        //LoginScreenIntent.putExtra("UserProfile", CurrentUser);
-                                        //Toast.makeText(LoginScreen.this, "Login Successful!", Toast.LENGTH_LONG).show();
-                                        //startActivity(LoginScreenIntent);
-                                        //finish();
                                     }
                                 }
                             });
@@ -220,22 +227,27 @@ public class LoginScreen extends AppCompatActivity {
                     db_item_count++;
                 }
 
-                ProfileSettings UserProfile = new ProfileSettings(user_uuid, firebase_profile_picture_file,
+                final ProfileSettings UserProfile = new ProfileSettings(user_uuid, firebase_profile_picture_file,
                         full_name, email, username, credentials, account_type, theme_id);
 
-                // TODO: For now, just use the ImageURL from somewhere until downloading is figured out.
-                String ImageUrl = "https://i.pinimg.com/originals/96/f8/12/96f8124135db17dd063555a910e5e240.jpg";
-                UserProfile.UploadNewProfilePicture(ImageUrl);
-                //CurrentUser = UserProfile;
+                // Get the DownloadURL
+                String firebase_profile_pic_link = UserProfile.GetExistingFirebaseProfilePicture();
+                storageRef.child(firebase_profile_pic_link).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>()
+                {
+                    @Override
+                    public void onSuccess(Uri downloadUrl)
+                    {
+                        String ImageUrl = UserProfile.GetFirebasePublicUrl(downloadUrl.getEncodedPath());
+                        UserProfile.UploadNewProfilePicture(ImageUrl);
 
-                // Now go to the User Portal.
-                Intent LoginScreenIntent = new Intent(
-                        LoginScreen.this,
-                        UserPortal.class);
-                LoginScreenIntent.putExtra("UserProfile", UserProfile);
-                Toast.makeText(LoginScreen.this, "Login Successful!", Toast.LENGTH_LONG).show();
-                startActivity(LoginScreenIntent);
-                finish();
+                        Intent LoginScreenIntent = new Intent(
+                                LoginScreen.this,
+                                UserPortal.class);
+                        LoginScreenIntent.putExtra("UserProfile", UserProfile);
+                        startActivity(LoginScreenIntent);
+                        finish();
+                    }
+                });
             }
 
             @Override

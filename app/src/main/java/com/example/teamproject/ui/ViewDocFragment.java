@@ -60,7 +60,7 @@ public class ViewDocFragment extends Fragment {
 
         if (DebugMode) {
             // TODO: Figure out a better way to load the PDF based on data stored on main activity.
-            DocumentVersion = ((ReviewActivity)getActivity()).current_version;
+            DocumentVersion = ((StartTheReview)getActivity()).current_version;
             LoadSamplePDF(); // This loads a different pdf after each version selection.
         }
 
@@ -87,7 +87,7 @@ public class ViewDocFragment extends Fragment {
     public void onAttach(Context context)
     {
         if (DebugMode) {
-            DocumentVersion = ((ReviewActivity)getActivity()).current_version;
+            DocumentVersion = ((StartTheReview)getActivity()).current_version;
         }
         super.onAttach(context);
     }
