@@ -2,15 +2,18 @@ package com.example.teamproject.ui;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -21,11 +24,13 @@ import androidx.core.content.ContextCompat;
 import androidx.viewpager.widget.ViewPager;
 import com.example.teamproject.R;
 import com.example.teamproject.model.AppThemes;
+import com.example.teamproject.model.CommentsListAdapter;
 import com.example.teamproject.model.ProfileSettings;
 import com.example.teamproject.model.ReviewPageAdapter;
 import com.example.teamproject.model.SingleComment;
 import com.google.android.material.tabs.TabLayout;
 import java.util.ArrayList;
+import java.util.List;
 
 public class StartTheReview extends AppCompatActivity {
     ProfileSettings CurrentUser;
@@ -47,7 +52,13 @@ public class StartTheReview extends AppCompatActivity {
     String dropdown_selection;
     int current_dropdown_position = 0, current_tab_selection = 0, current_version = 0;
 
-    // The data used for updating firebase (on edits).
+    // The data used for updating firebase (on edits) and displaying comments.
+    private static final String TAG = "StartTheReview";
+    Context CommentsContext;
+    View CommentsView;
+    ListView CommentsListView;
+    List<SingleComment> listOfComments = new ArrayList<SingleComment>();
+    ArrayList<SingleComment> DeletedComments = new ArrayList<SingleComment>();
     ArrayList<SingleComment> UpdatedComments = new ArrayList<SingleComment>();
     ArrayList<SingleComment> NewComments = new ArrayList<SingleComment>();
 
@@ -62,6 +73,7 @@ public class StartTheReview extends AppCompatActivity {
         Intent i = getIntent();
         CurrentUser = (ProfileSettings) i.getSerializableExtra("UserProfile");
         logged_in_username = CurrentUser.Username();
+        Log.i(TAG, "Logged In: " + logged_in_username);
 
         /*****************************************************************
          *  Change the Background that was selected by the theme_dropdown
@@ -214,6 +226,13 @@ public class StartTheReview extends AppCompatActivity {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(dialog_message).setTitle(title);
 
+        // If the user chooses "No", just dismiss the dialog box.
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.dismiss();
+            }
+        });
+
         // If the user chooses to press "Yes", only then, return to login screen.
         // TODO: Remove last user login entry from SQL Database.
         builder.setPositiveButton("Goto User Portal", new DialogInterface.OnClickListener() {
@@ -228,13 +247,6 @@ public class StartTheReview extends AppCompatActivity {
             }
         });
 
-        // If the user chooses "No", just dismiss the dialog box.
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                dialog.dismiss();
-            }
-        });
-
         // Finally display the Alert Dialog.
         AlertDialog dialog = builder.create();
         dialog.show();
@@ -243,7 +255,7 @@ public class StartTheReview extends AppCompatActivity {
     /**************************************************
      *  Comments Tab: Button Click Handler Functions.
      **************************************************/
-    public void EditCommentDialog(final int comment_number, final String commenter_fullname,
+    public void EditCommentDialog(final String firebase_comment_number, final String commenter_fullname,
                                   final String commenter_username, final String comment) {
         String title = commenter_username + "'s Comment";
         String updated_comment = "";
@@ -259,7 +271,43 @@ public class StartTheReview extends AppCompatActivity {
         editable_comment_view.setLayoutParams(lp);
         builder.setView(editable_comment_view);
 
-        // If the user chooses "No", just dismiss the dialog box.
+        // If the user chooses "Cancel", just dismiss the dialog box.
+        builder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.dismiss();
+            }
+        });
+
+        // If the user chooses "Delete", the comment in question is deleted.
+        builder.setNegativeButton("Delete", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                String delete_comment = editable_comment_view.getText().toString();
+
+                // Add a new entry into DeletedComments array.
+                String empty_date = "";
+                SingleComment del_comment = new SingleComment(
+                        firebase_comment_number, commenter_fullname, "",
+                        delete_comment, empty_date);
+                del_comment.setCreation_date();
+                DeletedComments.add(del_comment);
+
+                // Delete the comment in the comment list array by comparing the comment #.
+                for (int i = 0; i < listOfComments.size(); ++i) {
+                    if (listOfComments.get(i).CommentNumber().equals(firebase_comment_number)) {
+                        listOfComments.remove(i);
+                        break;
+                    }
+                }
+
+                // Finally, reload the List ArrayAdapter..
+                CommentsListAdapter adapter = new CommentsListAdapter(CommentsContext, R.layout.display_comment, commenter_username, listOfComments);
+                CommentsListView.setAdapter(adapter);
+
+                dialog.dismiss();
+            }
+        });
+
+        // If the user chooses "Modify", The user's text is modified.
         builder.setPositiveButton("Modify", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 String updated_comment = editable_comment_view.getText().toString();
@@ -270,10 +318,9 @@ public class StartTheReview extends AppCompatActivity {
                     // Check if existing entry exists in the comments array, update the entry.
                     Boolean updated_comment_exists = false;
                     for (int i = 0; i < UpdatedComments.size(); ++i) {
-                        if (String.valueOf(comment_number) == UpdatedComments.get(i).CommentNumber()) {
+                        if (firebase_comment_number == UpdatedComments.get(i).CommentNumber()) {
                             updated_comment_exists = true;
                             UpdatedComments.get(i).setComment(updated_comment);
-                            //Toast.makeText(getApplicationContext(), "Updated: " + UpdatedComments.get(i).Comment(), Toast.LENGTH_LONG).show();
                         }
                     }
 
@@ -281,20 +328,12 @@ public class StartTheReview extends AppCompatActivity {
                     if (!updated_comment_exists) {
                         String empty_date = "";
                         SingleComment new_comment = new SingleComment(
-                                String.valueOf(comment_number),commenter_fullname, commenter_username,
+                                firebase_comment_number, commenter_fullname, commenter_username,
                                 updated_comment, empty_date);
                         new_comment.setCreation_date();
                         UpdatedComments.add(new_comment);
-                        //Toast.makeText(getApplicationContext(), "New: " + UpdatedComments.get(UpdatedComments.size() - 1).Comment(), Toast.LENGTH_LONG).show();
                     }
                 }
-            }
-        });
-
-        // If the user chooses "No", just dismiss the dialog box.
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                dialog.dismiss();
             }
         });
 
@@ -326,15 +365,14 @@ public class StartTheReview extends AppCompatActivity {
         //get the row the clicked button is in
         ConstraintLayout RowLayout = (ConstraintLayout) view.getParent();
         RowComment = (Button) RowLayout.getChildAt(0);
-        TextView RowCommentNumber = (TextView) RowLayout.getChildAt(1);
-        TextView RowFullName = (TextView) RowLayout.getChildAt(2);
-        TextView RowUsername = (TextView) RowLayout.getChildAt(3);
+        TextView RowFirebaseCommentNumber = (TextView) RowLayout.getChildAt(2);
+        TextView RowFullName = (TextView) RowLayout.getChildAt(3);
+        TextView RowUsername = (TextView) RowLayout.getChildAt(4);
 
         // If the comment username is the same as the logged in user, allow editing the comment.
         if (RowUsername.getText().toString().equals("@" + CurrentUser.Username())) {
-            String number_string = RowCommentNumber.getText().toString().replace("#","").trim();
-            int firebase_comment_index = Integer.parseInt(number_string);
-            EditCommentDialog(firebase_comment_index, RowFullName.getText().toString(), RowUsername.getText().toString(), RowComment.getText().toString());
+            String firebase_comment_number = RowFirebaseCommentNumber.getText().toString();
+            EditCommentDialog(firebase_comment_number, RowFullName.getText().toString(), RowUsername.getText().toString(), RowComment.getText().toString());
         } else {
             ViewCommentDetailsDialog(RowUsername.getText().toString(), RowComment.getText().toString());
         }

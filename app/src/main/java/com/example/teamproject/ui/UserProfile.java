@@ -2,7 +2,6 @@ package com.example.teamproject.ui;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -10,10 +9,10 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -50,6 +49,7 @@ public class UserProfile extends AppCompatActivity {
     ProfileSettings CurrentUser;
     AppThemes AvailableThemes;
     int ThemeID;
+    private static final String TAG = "UserProfile";
 
     private ConstraintLayout ThisLayout;
     private ImageView GoBackIcon, ProfilePicture;
@@ -213,6 +213,8 @@ public class UserProfile extends AppCompatActivity {
         ButtonProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                ButtonProfile.setEnabled(false);
+                Log.d(TAG, "Profile Save Button disabled, due to upload.");
                 // Apply any changes that the user made. (Full Name, Credentials, and BG Theme)
                 full_name = FullName.getText().toString();
                 credentials = Credentials.getText().toString();
@@ -275,6 +277,7 @@ public class UserProfile extends AppCompatActivity {
                         // If required, update the database entry.s
                         if (new_entry_flag) {
                             mDatabaseReference.child("user_profiles").child(current_user.UUID()).child("picture").setValue(current_user.GetFirebaseProfilePictureName());
+                            Log.d(TAG, "Firebase user profile database entry updated with picture=" + current_user.GetFirebaseProfilePictureName());
                         }
                         // Refresh Firebase profile & return to the User Portal Activity.
                         GetFirebaseUserProfile(current_user.UUID());
@@ -323,22 +326,22 @@ public class UserProfile extends AppCompatActivity {
         String no_photo_firebase_location = "/profile_pictures/no_photo.png";
         if (current_user.GetExistingFirebaseProfilePicture().equals(no_photo_firebase_location) && !current_user.GetFirebaseProfilePicture().isEmpty()) {
             // Since the user profile never had a custom photo to begin with, upload a new one.
-            Toast.makeText(getApplicationContext(), "New photo, uploading new file and database entry.", Toast.LENGTH_LONG).show();
+            Log.d(TAG, "New photo, uploading new file and database entry.");
             uploadFirebaseFile(photo, current_user.GetFirebaseProfilePicture(), current_user, true);
         } else if (current_user.GetFirebaseProfilePicture().equals(current_user.GetExistingFirebaseProfilePicture())) {
             // The new photo and the old one have the same extension, do an upload only.
-            Toast.makeText(getApplicationContext(), "Same Extension. Just upload new file.", Toast.LENGTH_LONG).show();
+            Log.d(TAG, "Same Extension. Just upload new file.");
             uploadFirebaseFile(photo, current_user.GetFirebaseProfilePicture(), current_user, false);
         } else if (current_user.GetFirebaseProfilePicture().equals("")) {
             // This should never happen! A new photo flag should lock out this combination.
-            Toast.makeText(getApplicationContext(), "No new photo selected.", Toast.LENGTH_LONG).show();
+            Log.d(TAG, "No new photo selected.");
 
             // Refresh Firebase profile & return to the User Portal Activity.
             GetFirebaseUserProfile(current_user.UUID());
         } else {
             // if the extension for the new photo and the old one are different,
             // delete the previous profile pic file and then do an upload of the new file.
-            Toast.makeText(getApplicationContext(), "Different Extension. Delete previous file, upload new file and database.", Toast.LENGTH_LONG).show();
+            Log.d(TAG, "Different Extension. Delete previous file, upload new file and database.");
             deleteAndReplaceFirebaseFile(photo, current_user.GetExistingFirebaseProfilePicture(),
                     current_user.GetFirebaseProfilePicture(), current_user, true);
         }
@@ -351,6 +354,8 @@ public class UserProfile extends AppCompatActivity {
         mDatabaseReference.child("user_profiles").child(current_user.UUID()).child("full_name").setValue(full_name);
         mDatabaseReference.child("user_profiles").child(current_user.UUID()).child("credentials").setValue(credentials);
         mDatabaseReference.child("user_profiles").child(current_user.UUID()).child("theme_id").setValue((long) theme_id);
+
+        Log.d(TAG, "General User profile database entries successfully updated.");
     }
 
     /***********************************************
@@ -404,42 +409,27 @@ public class UserProfile extends AppCompatActivity {
 
     public void GetFirebaseUserProfile(final String user_uuid) {
         DatabaseReference user_profiles_db = FirebaseDatabase.getInstance().getReference("user_profiles");
+        Log.d(TAG, "Firebase User Profile pull: Obtaining User=" + user_uuid + " User Profile...");
         user_profiles_db.child(user_uuid).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.d(TAG, "Firebase User Profile pull: Successfully found user data!");
                 // Ordered same way as in the database.
                 String account_type = "", credentials = "", email = "", full_name = "",
                         firebase_profile_picture_file = "";
                 int theme_id = 0;
                 String username = "";
 
-                // TODO: Fix FirebaseUserProfile.class to work DataSnapshot without crashing.
-                int db_item_count = 0;
-                for (DataSnapshot data : dataSnapshot.getChildren()) {
-                    if (db_item_count == 0) {
-                        String str_item = data.getValue(String.class);
-                        account_type = str_item;
-                    } else if (db_item_count == 1) {
-                        String str_item = data.getValue(String.class);
-                        credentials = str_item;
-                    } else if (db_item_count == 2) {
-                        String str_item = data.getValue(String.class);
-                        email = str_item;
-                    } else if (db_item_count == 3) {
-                        String str_item = data.getValue(String.class);
-                        full_name = str_item;
-                    } else if (db_item_count == 4) {
-                        String str_item = data.getValue(String.class);
-                        firebase_profile_picture_file = str_item;
-                    } else if (db_item_count == 5) {
-                        long long_item = data.getValue(long.class);
-                        theme_id = (int) long_item;
-                    } else if (db_item_count == 6) {
-                        String str_item = data.getValue(String.class);
-                        username = str_item;
-                    }
-                    db_item_count++;
-                }
+                // Pull up all the children and get their values.
+                account_type = dataSnapshot.child("account_type").getValue(String.class);
+                credentials = dataSnapshot.child("credentials").getValue(String.class);
+                email = dataSnapshot.child("email").getValue(String.class);
+                full_name = dataSnapshot.child("full_name").getValue(String.class);
+                firebase_profile_picture_file = dataSnapshot.child("picture").getValue(String.class);
+                username = dataSnapshot.child("username").getValue(String.class);
+                long theme_id_lng = dataSnapshot.child("theme_id").getValue(long.class);
+                theme_id = (int) theme_id_lng;
+                Log.d(TAG, "Firebase User Profile pull: Successfully pulled all data!");
 
                 final ProfileSettings UserProfile = new ProfileSettings(user_uuid, firebase_profile_picture_file,
                         full_name, email, username, credentials, account_type, theme_id);
@@ -453,11 +443,13 @@ public class UserProfile extends AppCompatActivity {
                     {
                         String ImageUrl = UserProfile.GetFirebasePublicUrl(downloadUrl.getEncodedPath());
                         UserProfile.UploadNewProfilePicture(ImageUrl);
+                        Log.d(TAG, "Firebase Profile picture location successfully updated!");
                         Intent LoginScreenIntent = new Intent(
                                 UserProfile.this,
                                 UserPortal.class);
                         LoginScreenIntent.putExtra("UserProfile", UserProfile);
                         startActivity(LoginScreenIntent);
+                        Log.d(TAG, "Now going into User Portal Activity.");
                         finish();
                     }
                 });
@@ -477,8 +469,10 @@ public class UserProfile extends AppCompatActivity {
      ***************************************************************/
     public void LoadProfilePicture(ImageView image_view, String image_url) {
         Picasso.get().load(image_url).transform(new CircularImageTransform()).fit().into(image_view);
+        Log.d(TAG, "Loaded Web URL Photo");
     }
     public void LoadProfilePictureUri(ImageView image_view, Uri image_uri) {
         Picasso.get().load(image_uri).transform(new CircularImageTransform()).fit().into(image_view);
+        Log.d(TAG, "Loaded Local Uri Photo");
     }
 }

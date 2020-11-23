@@ -5,15 +5,16 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -26,41 +27,60 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
-import androidx.room.Delete;
 
 import com.example.teamproject.R;
 import com.example.teamproject.model.AppThemes;
 import com.example.teamproject.model.CircularImageTransform;
+import com.example.teamproject.model.FirebaseReview;
+import com.example.teamproject.model.FirebaseReviewVersion;
 import com.example.teamproject.model.ProfileSettings;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
-import org.w3c.dom.Text;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class UserPortal extends AppCompatActivity {
     ProfileSettings CurrentUser;
     AppThemes AvailableThemes;
     int ThemeID;
+    private static final String TAG = "UserPortal";
 
+    // UI based variables.
     private ConstraintLayout ThisLayout;
     private Button StartReview, SelectPDF;
     private EditText ReviewTitle;
     private TextView SelectedTitle, SelectedVersion, SelectedPDF, AccountType, UploadStatus;
     private ImageView ProfileIcon, GoBackIcon, DeleteReviewIcon;
     private Spinner review_title_chooser, review_version_chooser;
-    private String[] existing_reviews = new String[0]; // empty
-    private String[] existing_versions = new String[0]; // empty
-    private String[] test_reviews = {"Stem Cell IEEE", "Part Datasheet", "COVID19 Report"};
-    private String[] test_versions = {"1", "2", "3"};
+    private ArrayList<String> existing_reviews = new ArrayList<String>(); // empty
+    private ArrayList<String> existing_versions = new ArrayList<String>();; // empty
+    ArrayList<FirebaseReview> AllReviews = new ArrayList<FirebaseReview>(); // Additional information about each review.
+    private String current_review, current_version, current_review_uuid, review_owner; // These are configured by user choosing the dropdown.
+    private ArrayList<String> test_reviews = new ArrayList<String>() {{
+        add("");
+        add("Stem Cell IEEE");
+        add("Part Datasheet");
+        add("COVID19 Report");
+    }};
+    private ArrayList<String> test_versions = new ArrayList<String>() {{
+        add("");
+        add("1");
+        add("2");
+        add("3");
+    }};
+    Boolean[] existing_review_selected_flags = {false, false};
 
     // Firebase
     private FirebaseAuth mAuth;
@@ -111,7 +131,7 @@ public class UserPortal extends AppCompatActivity {
         /************************
          *  Update the spinners
          ************************/
-        RetrieveFirebaseReviews();
+        RetrieveReviews();
 
         /*****************************************************************
          *  Change the Background that was selected by the theme_dropdown
@@ -216,6 +236,8 @@ public class UserPortal extends AppCompatActivity {
             ((ViewGroup) SelectPDF.getParent()).removeView(SelectPDF);
             ((ViewGroup) SelectedPDF.getParent()).removeView(SelectedPDF);
             ((ViewGroup) ReviewTitle.getParent()).removeView(ReviewTitle);
+
+            // Now, enable the Start Review Button.
         }
 
         StartReview.setOnClickListener(new View.OnClickListener() {
@@ -332,6 +354,7 @@ public class UserPortal extends AppCompatActivity {
         }
         // Now just add the new version entry into the database.
         mDatabaseReference.child("open_reviews").child(review_uuid).child("versions").child(version).child("pdf").setValue(firebase_pdf_file);
+        mDatabaseReference.child("open_reviews").child(review_uuid).child("versions").child(version).child("annotations").setValue("none");
     }
 
     /***********************
@@ -380,20 +403,210 @@ public class UserPortal extends AppCompatActivity {
     /**************************************
      * Returns Firebase review versions.
      *************************************/
-    public void RetrieveFirebaseReviews() {
-        // TODO: Read back all the firebase review versions.
-        existing_reviews = test_reviews;
-        existing_versions = test_versions;
-
+    public void RetrieveReviews() {
+        // Define the spinners.
         review_title_chooser = (Spinner) findViewById(R.id.review_title_chooser);
         review_version_chooser = (Spinner) findViewById(R.id.review_version_chooser);
-        ArrayAdapter<String> adpter1 = new ArrayAdapter<String> (UserPortal.this, R.layout.review_spinner, existing_reviews);
-        ArrayAdapter<String> adpter2 = new ArrayAdapter<String> (UserPortal.this, R.layout.review_spinner, existing_versions);
-        review_title_chooser.setAdapter(adpter1);
-        review_version_chooser.setAdapter(adpter2);
+
+        // TODO: Read back all the firebase review versions.
+        //existing_reviews = test_reviews;
+        //existing_versions = test_versions;
+        Log.d(TAG, "Preparing Firebase Review pull.");
+        PullFirebaseReviews();
+
+        // On pressing the drop down menu, return the current review title
+        review_title_chooser.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                // Once the review is selected, updated the views below.
+                SelectedTitle.setText("");
+                current_review = review_title_chooser.getSelectedItem().toString();
+                Log.d(TAG, "Review Title Selection: Current Review Title: " + current_review);
+
+                if (!current_review.isEmpty()) {
+                    existing_versions = new ArrayList<String>();
+                    existing_versions.add("");
+
+                    // Obtain the current review uuid (used to differentiate the uuid).
+                    current_review_uuid = AllReviews.get(position - 1).UUID();
+                    review_owner = AllReviews.get(position -1).Owner();
+                    Log.d(TAG, "Review Title Selection: Current Review UUID: " + current_review_uuid);
+                    Log.d(TAG, "Review Title Selection: Current Review Owner: " + review_owner);
+                    Log.d(TAG, "Review Title Selection: Logged in User: " + CurrentUser.Username());
+
+                    // TODO: Generate the list of versions based on entries in AllReviews.
+                    FirebaseReview current_review = AllReviews.get(position - 1);
+                    ArrayList<FirebaseReviewVersion> current_review_versions = current_review.getAllVersions();
+                    for (int i = 0; i < current_review_versions.size(); ++i) {
+                        String version = current_review_versions.get(i).Version();
+                        existing_versions.add(version);
+                        Log.d(TAG, "Review Title Selection: Found version: " + version);
+                    }
+                    existing_review_selected_flags[0] = true;
+                } else {
+                    existing_versions = new ArrayList<String>();
+                    existing_versions.add(""); // Required for button enabled flag
+                    existing_review_selected_flags[0] = false;
+                }
+                ArrayAdapter<String> adpter2 = new ArrayAdapter<String> (UserPortal.this, R.layout.review_spinner, existing_versions);
+                review_version_chooser.setAdapter(adpter2);
+                Log.d(TAG, "Review Title Selection: Review Version spinner successfully updated");
+
+                if(existing_review_selected_flags[0] && existing_review_selected_flags[1]) {
+                    SelectedTitle.setText(current_review);
+                    SelectedVersion.setText(current_version);
+
+                    StartReview.setEnabled(true);
+                } else {
+                    SelectedTitle.setText("");
+                    SelectedVersion.setText("");
+                    StartReview.setEnabled(false);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+                // Do nothing.
+            }
+        });
+        // On pressing the drop down menu, return the current review version
+        review_version_chooser.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                // Once the review is selected, updated the views below.
+                SelectedVersion.setText("");
+                current_version = review_version_chooser.getSelectedItem().toString();
+                Log.d(TAG, "Review Version Selection: Current Version: " + current_version);
+
+                if (!current_version.isEmpty()) {
+                    existing_review_selected_flags[1] = true;
+                } else {
+                    existing_review_selected_flags[1] = false;
+                }
+                if(existing_review_selected_flags[0] && existing_review_selected_flags[1]) {
+                    SelectedTitle.setText(current_review);
+                    SelectedVersion.setText(current_version);
+
+                    StartReview.setEnabled(true);
+                } else {
+                    SelectedTitle.setText("");
+                    SelectedVersion.setText("");
+                    StartReview.setEnabled(false);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+                // Do nothing.
+            }
+        });
     }
 
-    @Override
+    /********************************************************************
+     * Retrieves Firebase entries and returns an ArrayList of entries.
+     *******************************************************************/
+    public void PullFirebaseReviews() {
+        // open_reviews contains all the reviews to be played with in StartTheReview Activity.
+        final DatabaseReference reviews_db = FirebaseDatabase.getInstance().getReference("open_reviews");
+        reviews_db.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // Initialize the String ArrayLists.
+                existing_reviews = new ArrayList<String>();
+                existing_versions = new ArrayList<String>();
+
+                // Add the 'empty' entries to the String ArrayLists.
+                existing_reviews.add(""); // Required for button enabled flag.
+                existing_versions.add(""); // Required for button enabled flag.
+
+                Log.d(TAG, "Firebase Reviews Pull: Access Success! Grabbing Children...");
+                for (DataSnapshot data : dataSnapshot.getChildren()) {
+                    // These children are essentially the UUIDs representing the Reviews.
+                    String current_uuid = data.getKey();
+                    String owner = data.child("owner").getValue(String.class);
+                    long latest_version = data.child("latest_version").getValue(long.class);
+                    Boolean read_only = data.child("read_only").getValue(Boolean.class);
+                    String review_title = data.child("title").getValue(String.class);
+                    Boolean viewable = data.child("viewable").getValue(Boolean.class);
+
+                    //TODO: Check if viewable flag is true. If false, skip the review.
+                    //if (!viewable) {
+                    //Log.d(TAG, "Firebase Reviews Pull: Review=" + current_uuid + " is not viewable. Skipping...");
+                    //    continue;
+                    //}
+
+                    FirebaseReview review = new FirebaseReview(current_uuid, owner, latest_version,
+                            review_title, read_only, viewable);
+                    Log.d(TAG, "Firebase Reviews Pull: Child, uuid:" + review.UUID());
+                    Log.d(TAG, "Firebase Reviews Pull: Child, owner:" + review.Owner());
+                    Log.d(TAG, "Firebase Reviews Pull: Child, latest_version:" + String.valueOf(review.LatestVersion()));
+
+                    // Get more information inside "versions"
+                    for (DataSnapshot nested_data : data.child("versions").getChildren()) {
+                        String version_number = nested_data.getKey();
+                        String version_pdf = nested_data.child("pdf").getValue(String.class);
+                        String version_annotation;
+
+                        FirebaseReviewVersion version = new FirebaseReviewVersion(version_number, version_pdf);
+                        review.addVersionNumber(version_number);
+                        Log.d(TAG, "Firebase Reviews Pull: Child, Version:" + version.Version());
+                        Log.d(TAG, "Firebase Reviews Pull: Child, pdf file:" + version.PDF());
+                        try {
+                            version_annotation = nested_data.child("annotations").getValue(String.class);
+                            Log.d(TAG, "Firebase Reviews Pull: Child, annotation file:" + version_annotation);
+                        } catch (Exception e){
+                            version_annotation = "";
+                            Log.d(TAG, "Firebase Reviews Pull: Child, annotation file - not available!");
+                        }
+                        version.setAnnotationFile(version_annotation);
+                        review.addVersion(version);
+                        Log.d(TAG, "Firebase Reviews Pull: Child, Added Version inside Review.");
+                        // TODO: Grab all the comments for StartTheReview activity?
+                    }
+                    AllReviews.add(review);  // Will be used to pass to next activity.
+                    existing_reviews.add(review_title); // This will update the drop down list.
+                    Log.d(TAG, "Firebase Reviews Pull: Child, Added Review == Title:" + review.ReviewTitle());
+                }
+
+                // Finally, update the spinners with the new data.
+                ArrayAdapter<String> adpter1 = new ArrayAdapter<String> (UserPortal.this, R.layout.review_spinner, existing_reviews);
+                review_title_chooser.setAdapter(adpter1);
+                Log.d(TAG, "Firebase Reviews Pull: Review Title spinner successfully updated!");
+
+                ArrayAdapter<String> adpter2 = new ArrayAdapter<String> (UserPortal.this, R.layout.review_spinner, existing_versions);
+                review_version_chooser.setAdapter(adpter2);
+                Log.d(TAG, "Firebase Reviews Pull: Review Version spinner successfully updated!");
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // If there is nothing in the database, or some error occurs, just return empty.
+
+                // Initialize the String ArrayLists.
+                existing_reviews = new ArrayList<String>();
+                existing_versions = new ArrayList<String>();
+
+                // Add the 'empty' entries to the String ArrayLists.
+                existing_reviews.add(""); // Required for button enabled flag.
+                existing_versions.add(""); // Required for button enabled flag.
+
+                // Finally, update the spinners with the new data.
+                ArrayAdapter<String> adpter1 = new ArrayAdapter<String> (UserPortal.this, R.layout.review_spinner, existing_reviews);
+                review_title_chooser.setAdapter(adpter1);
+                Log.d(TAG, "Firebase Reviews Pull: Review Title spinner successfully updated!");
+
+                ArrayAdapter<String> adpter2 = new ArrayAdapter<String> (UserPortal.this, R.layout.review_spinner, existing_versions);
+                review_version_chooser.setAdapter(adpter2);
+                Log.d(TAG, "Firebase Reviews Pull: Review Version spinner successfully updated!");
+
+                // Add the 'empty' entries to the String ArrayLists.
+                Log.d(TAG, "Firebase Reviews Pull: No entries found (or error).");
+            }
+        });
+        Log.d(TAG, "Reviews Size: " + String.valueOf(existing_reviews.size()));
+    }
+
     public void onBackPressed() {
         LogoutDialog();
     }

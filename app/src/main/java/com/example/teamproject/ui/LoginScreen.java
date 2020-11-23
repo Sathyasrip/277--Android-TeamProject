@@ -199,7 +199,7 @@ public class LoginScreen extends AppCompatActivity {
                 int theme_id = 0;
                 String username = "";
 
-                // TODO: Fix FirebaseUserProfile.class to work DataSnapshot without crashing.
+                // TODO: Is there a better way instead of doing this loop?
                 int db_item_count = 0;
                 for (DataSnapshot data : dataSnapshot.getChildren()) {
                     if (db_item_count == 0) {

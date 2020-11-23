@@ -27,7 +27,6 @@ import java.util.List;
 public class CommentsFragment extends Fragment {
 
     private Boolean DebugMode = true;
-    List<SingleComment> listOfComments;
     ListView commentsListView;
     int DocumentVersion = 0;
 
@@ -51,18 +50,20 @@ public class CommentsFragment extends Fragment {
         DocumentVersion = ((StartTheReview)getActivity()).current_version;
 
         // Since this Fragment contains a ListView we must set the adapter and load it.
+        ((StartTheReview)getActivity()).CommentsView = currentView;
         commentsListView = (ListView) currentView.findViewById(R.id.listview_comments);
-        listOfComments = new ArrayList<SingleComment>();
+        ((StartTheReview)getActivity()).CommentsListView = commentsListView;
 
         // Load the comment list.
         if (DebugMode) {
             // TODO: Replace this with a return from the host activity, or database call.
-            listOfComments = GetCommentTestSamples(DocumentVersion);
+            ((StartTheReview)getActivity()).listOfComments = GetCommentTestSamples(DocumentVersion);
         }
 
         // Create the Comments List Adapter and then set the adapter to the Comments List View.
-        CommentsListAdapter adapter = new CommentsListAdapter(getContext(), R.layout.display_comment, currentUser_username, listOfComments);
-        commentsListView.setAdapter(adapter);
+        ((StartTheReview)getActivity()).CommentsContext = getContext();
+        CommentsListAdapter adapter = new CommentsListAdapter(((StartTheReview)getActivity()).CommentsContext, R.layout.display_comment, currentUser_username, ((StartTheReview)getActivity()).listOfComments);
+        ((StartTheReview)getActivity()).CommentsListView.setAdapter(adapter);
 
         return currentView;
     }
