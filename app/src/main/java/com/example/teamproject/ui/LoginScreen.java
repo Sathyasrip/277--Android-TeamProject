@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -199,33 +200,15 @@ public class LoginScreen extends AppCompatActivity {
                 int theme_id = 0;
                 String username = "";
 
-                // TODO: Is there a better way instead of doing this loop?
-                int db_item_count = 0;
-                for (DataSnapshot data : dataSnapshot.getChildren()) {
-                    if (db_item_count == 0) {
-                        String str_item = data.getValue(String.class);
-                        account_type = str_item;
-                    } else if (db_item_count == 1) {
-                        String str_item = data.getValue(String.class);
-                        credentials = str_item;
-                    } else if (db_item_count == 2) {
-                        String str_item = data.getValue(String.class);
-                        email = str_item;
-                    } else if (db_item_count == 3) {
-                        String str_item = data.getValue(String.class);
-                        full_name = str_item;
-                    } else if (db_item_count == 4) {
-                        String str_item = data.getValue(String.class);
-                        firebase_profile_picture_file = str_item;
-                    } else if (db_item_count == 5) {
-                        long long_item = data.getValue(long.class);
-                        theme_id = (int) long_item;
-                    } else if (db_item_count == 6) {
-                        String str_item = data.getValue(String.class);
-                        username = str_item;
-                    }
-                    db_item_count++;
-                }
+                // Pull up all the children and get their values.
+                account_type = dataSnapshot.child("account_type").getValue(String.class);
+                credentials = dataSnapshot.child("credentials").getValue(String.class);
+                email = dataSnapshot.child("email").getValue(String.class);
+                full_name = dataSnapshot.child("full_name").getValue(String.class);
+                firebase_profile_picture_file = dataSnapshot.child("picture").getValue(String.class);
+                username = dataSnapshot.child("username").getValue(String.class);
+                long theme_id_lng = dataSnapshot.child("theme_id").getValue(long.class);
+                theme_id = (int) theme_id_lng;
 
                 final ProfileSettings UserProfile = new ProfileSettings(user_uuid, firebase_profile_picture_file,
                         full_name, email, username, credentials, account_type, theme_id);
