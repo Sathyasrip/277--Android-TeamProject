@@ -58,7 +58,7 @@ public class UserProfile extends AppCompatActivity {
     Button ButtonProfile;
     private Spinner theme_dropdown;
     private String[] available_themes;
-    String dropdown_selection, full_name, credentials;
+    String full_name, credentials;
 
     // Firebase-related
     private FirebaseAuth mAuth;

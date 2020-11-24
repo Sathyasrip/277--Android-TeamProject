@@ -17,9 +17,11 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -49,6 +51,8 @@ import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 
 public class UserPortal extends AppCompatActivity {
@@ -61,13 +65,15 @@ public class UserPortal extends AppCompatActivity {
     private ConstraintLayout ThisLayout;
     private Button StartReview, SelectPDF;
     private EditText ReviewTitle;
-    private TextView SelectedTitle, SelectedVersion, SelectedPDF, AccountType, UploadStatus;
+    private TextView SelectedTitle, SelectedVersion, SelectedPDF, AccountType, UploadStatus, ReviewOwner;
     private ImageView ProfileIcon, GoBackIcon, DeleteReviewIcon;
     private Spinner review_title_chooser, review_version_chooser;
+    private Switch AddVersion;
     private ArrayList<String> existing_reviews = new ArrayList<String>(); // empty
     private ArrayList<String> existing_versions = new ArrayList<String>();; // empty
     ArrayList<FirebaseReview> AllReviews = new ArrayList<FirebaseReview>(); // Additional information about each review.
-    private String current_review, current_version, current_review_uuid, review_owner; // These are configured by user choosing the dropdown.
+    private String current_review_uuid, review_owner; // These are configured by user choosing the dropdown.
+    private long latest_version; // When the switch is ON, this is incremented by 1.
     private ArrayList<String> test_reviews = new ArrayList<String>() {{
         add("");
         add("Stem Cell IEEE");
@@ -90,7 +96,8 @@ public class UserPortal extends AppCompatActivity {
     Uri pdf_file;
     String review_title="", review_version="1", review_uuid;
     Boolean[] required_upload_flags = {false, false, false};
-    Boolean new_review_flag = true;
+    Boolean new_review_flag = false; // True = Indicates switch is OFF, and reviewer chose to upload PDF.
+    Boolean new_review_version_flag = false; // True = Indicates switch is ON, and reviewer chose to upload PDF.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,8 +127,10 @@ public class UserPortal extends AppCompatActivity {
         SelectedVersion = (TextView) findViewById(R.id.tv_selected_review_version);
         StartReview = (Button) findViewById(R.id.button_start_review);
         UploadStatus = (TextView) findViewById(R.id.tv_upload_status);
+        AddVersion = (Switch) findViewById(R.id.switch_add_version);
+        ReviewOwner = (TextView) findViewById(R.id.tv_owner);
 
-        StartReview.setEnabled(false);
+        StartReview.setEnabled(false); // Unless a review was selected, this should be disabled.
         /**********************************************************************
         *  Retrieve the Intent containing the User Profile data from Firebase.
         **********************************************************************/
@@ -173,6 +182,107 @@ public class UserPortal extends AppCompatActivity {
         });
 
         if (CurrentUser.AccountType().equals("reviewer")) {
+            /**************************************************************
+             * If Reviewers flip the switch, the Title cannot be accessed.
+             **************************************************************/
+            AddVersion.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if(!isChecked) {
+                        Log.d(TAG, "AddVersion Switch: OFF, switched to New Review Add OR Existing Review Load.");
+                        new_review_version_flag = false;
+
+                        if (review_version_chooser.getSelectedItem().toString().isEmpty()) {
+                            // CASE 1: Version is empty and swapped back from Switch ON, remove Review title.
+                            Log.d(TAG, "AddVersion Switch: OFF, Swapped back from ON, Disable button.");
+                            existing_review_selected_flags[0] = false;
+                            existing_review_selected_flags[1] = false;
+                            required_upload_flags[1] = false; // Do not modify flag for selected PDF.
+
+                            SelectPDF.setEnabled(true);
+                            ReviewTitle.setText("");
+                            ReviewTitle.setEnabled(true); // Re-enable the Edit Text field
+
+                            // Reset the botton views to reflect indeterminate state.
+                            SelectedTitle.setText("");
+                            SelectedVersion.setText("");
+
+                            StartReview.setEnabled(false); // Disable button due to resetting Review Title
+                        } else if (!review_title_chooser.getSelectedItem().toString().isEmpty() && !review_version_chooser.getSelectedItem().toString().isEmpty()) {
+                            // CASE 2: Load the existing review only. Disable to Select PDF button and EditText.
+                            Log.d(TAG, "AddVersion Switch: OFF, Existing Review selected, No upload. Enable button.");
+                            existing_review_selected_flags[0] = true;
+                            existing_review_selected_flags[1] = true;
+                            required_upload_flags[1] = false;
+
+                            // Disable review buttons, until taken out of this state.
+                            SelectPDF.setEnabled(false);
+                            ReviewTitle.setText("");
+                            ReviewTitle.setEnabled(false);
+
+                            // Load the title and version fields to reflect the Existing review was chosen.
+                            String title = review_title_chooser.getSelectedItem().toString();
+                            String version = review_version_chooser.getSelectedItem().toString();
+                            SelectedTitle.setText(title);
+                            SelectedVersion.setText(version);
+
+                            StartReview.setEnabled(true);
+                        } else {
+                            // TODO: Check when we get here.
+                            // CASE 3: None of the above conditions above are set, so disable StartReview button.'
+                            Log.d(TAG, "AddVersion Switch: OFF, Default, no conditions were met. Disable button.");
+                            SelectedTitle.setText("");
+                            SelectedVersion.setText("");
+                            StartReview.setEnabled(false);
+                        }
+
+                    } else {
+                        Log.d(TAG, "AddVersion Switch: ON, Switched to New Version Mode.");
+                        new_review_version_flag = true;
+                        ReviewTitle.setText("Select Review you Own");
+                        ReviewTitle.setEnabled(false); // This is a given.
+
+                        if (review_title_chooser.getSelectedItem().toString().isEmpty()) {
+                            // CASE 4: No Review matching the owner was selected, so disable button.
+                            Log.d(TAG, "AddVersion Switch: ON, No Review title chosen. Disable Button.");
+                            existing_review_selected_flags[0] = false;
+                            existing_review_selected_flags[1] = false;
+                            required_upload_flags[1] = false;
+
+                            SelectPDF.setEnabled(false);  // Cannot choose PDF until matching version is selected.
+                            StartReview.setEnabled(false);
+                        } else if (!review_title_chooser.getSelectedItem().toString().isEmpty() && CurrentUser.Username().equals(review_owner)) {
+                            // CASE 5: An review matching ownership was selected, enable button and fill data.
+                            Log.d(TAG, "AddVersion Switch: ON, Owned Review selected. Enable Button.");
+                            existing_review_selected_flags[0] = false;
+                            existing_review_selected_flags[1] = false;
+                            required_upload_flags[1] = true;
+
+                            String title = review_title_chooser.getSelectedItem().toString();
+                            long new_version = latest_version + 1; // Loaded by Review title spinner.
+                            review_title = title; // Set through review title chooser spinner.
+                            review_version = String.valueOf(new_version);
+
+                            ReviewTitle.setText(review_title);
+                            SelectedTitle.setText(review_title);
+                            SelectedVersion.setText(review_version);
+
+                            SelectPDF.setEnabled(true);
+                            StartReview.setEnabled(true);
+                        } else {
+                            // CASE 6: If all other combinations are present, disable the button.
+                            Log.d(TAG, "AddVersion Switch: ON, Default, conditions are not met. Disable button.");
+                            existing_review_selected_flags[0] = false;
+                            existing_review_selected_flags[1] = false;
+                            required_upload_flags[1] = false;
+
+                            SelectPDF.setEnabled(false); // Cannot choose PDF until matching version is selected.
+                            StartReview.setEnabled(false);
+                        }
+                    }
+                }
+            });
+
             /***********************************************************************************
              * If Reviewers click this button, they can delete any existing Reviews or Versions.
              ***********************************************************************************/
@@ -201,34 +311,50 @@ public class UserPortal extends AppCompatActivity {
             /*****************************************************************
              * When the User successfully types something into the EditText,
              * Generate the UUID for the Review as well.
+             * This is only enabled when the switch is set to OFF.
              ****************************************************************/
             ReviewTitle.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                                                       @Override
                                                       public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                                                           if (actionId == EditorInfo.IME_ACTION_DONE) {
                                                               review_title = ReviewTitle.getText().toString();
-                                                              review_uuid = UUID.randomUUID().toString().replace("-","");
-                                                              Toast.makeText(getApplicationContext(), "UUID: " + review_uuid, Toast.LENGTH_SHORT).show();
 
-                                                              // Change the title and version text views.
-                                                              SelectedTitle.setText(review_title);
-                                                              SelectedVersion.setText("1");
+                                                              // CASE 1: User inputted a Review title
+                                                              if (!review_title.isEmpty()) {
+                                                                  Log.d(TAG,"ReviewTitle EditText: OK, User entered a title.");
+                                                                  new_review_flag = true;
 
-                                                              // Enable the Start Review button if all criteria is met.
-                                                              required_upload_flags[1] = true;
-                                                              if(required_upload_flags[0] && required_upload_flags[1]) {
-                                                                  StartReview.setEnabled(true);
+                                                                  review_uuid = UUID.randomUUID().toString().replace("-","");
+
+                                                                  // Change the title and version text views.
+                                                                  SelectedTitle.setText(review_title);
+                                                                  SelectedVersion.setText("1");
+
+                                                                  Log.d(TAG,"ReviewTitle EditText: OK, New Review Title=" + review_title);
+                                                                  Log.d(TAG,"ReviewTitle EditText: OK, Generated Review Title UUID=" + review_uuid);
+
+                                                                  // Set this flag to true to track all criteria met for New Review upload.
+                                                                  required_upload_flags[1] = true;
+                                                                  if(required_upload_flags[0] && required_upload_flags[1]) {
+                                                                      StartReview.setEnabled(true); // A review of some kind is ready to be uploaded.
+                                                                      Log.d(TAG,"ReviewTitle EditText: OK, all flags are set, Ready for New Review upload.");
+                                                                  } else {
+                                                                      Log.d(TAG,"ReviewTitle EditText: WARNING, not all flags are set. Not Ready for upload.");
+                                                                  }
+                                                              } else {
+                                                                  new_review_flag = false;
                                                               }
-
                                                               return true;
                                                           }
                                                           return false;
                                                       }
                                                   });
-        } else {
+            } else {
             // If the user is a standard user, don't show any of the views for making/editing Reviews.
             TextView StartReviewHeader = (TextView) findViewById(R.id.tv_new_review);
             TextView ReviewTitleHeader = (TextView) findViewById(R.id.tv_review_title_text);
+            TextView OrText = (TextView) findViewById(R.id.tv_or);
+            TextView SwitchText = (TextView) findViewById(R.id.tv_add_version);
 
             ((ViewGroup) DeleteReviewIcon.getParent()).removeView(DeleteReviewIcon);
             ((ViewGroup) StartReviewHeader.getParent()).removeView(StartReviewHeader);
@@ -236,28 +362,51 @@ public class UserPortal extends AppCompatActivity {
             ((ViewGroup) SelectPDF.getParent()).removeView(SelectPDF);
             ((ViewGroup) SelectedPDF.getParent()).removeView(SelectedPDF);
             ((ViewGroup) ReviewTitle.getParent()).removeView(ReviewTitle);
+            ((ViewGroup) AddVersion.getParent()).removeView(AddVersion);
+            ((ViewGroup) OrText.getParent()).removeView(OrText);
+            ((ViewGroup) SwitchText.getParent()).removeView(SwitchText);
 
-            // Now, enable the Start Review Button.
+            // TODO: Now, enable the Start Review Button.
         }
 
         StartReview.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: firebase
-                if (CurrentUser.AccountType().equals("reviewer")) {
-                    // Ensure all required fields are set, before attempting to upload the file.
-                    if(required_upload_flags[0] && required_upload_flags[1]) {
-                        uploadReview(pdf_file, review_uuid, review_version, new_review_flag);
-                        Toast.makeText(getApplicationContext(), "Check Firebase!", Toast.LENGTH_SHORT).show();
+                // If existing review flags are set, do a load review, no upload
+                if (existing_review_selected_flags[0] && existing_review_selected_flags[1]) {
+                    // TODO: Load AllReviews and go to the next activity.
+                    Log.d(TAG,"StartReview Button: Existing Review selected.");
+                    Log.d(TAG,"StartReview Button: Review Title=" + review_title);
+                    Log.d(TAG,"StartReview Button: Review Version=" + review_version);
+                    Log.d(TAG,"StartReview Button: Review Owner=" + review_owner);
+                    LaunchReviewer();
+                } else if (CurrentUser.AccountType().equals("reviewer")) {
+                    if (new_review_flag && required_upload_flags[0] && required_upload_flags[1]) {
+                        Log.d(TAG, "StartReview Button: New Review, begin upload.");
+                        Log.d(TAG, "StartReview Button: New Review, Review UUID=" + review_uuid);
+                        Log.d(TAG, "StartReview Button: New Review, Review Title=" + review_title);
+                        Log.d(TAG, "StartReview Button: New Review, Review Version=" + review_version);
+                        uploadReview(pdf_file, review_uuid, review_title, review_version, new_review_flag);
+
+                        // Prevent multiple uploads.
+                        ReviewTitle.setText("");
+                        new_review_flag = false;
+                        new_review_version_flag = false;
+                        StartReview.setEnabled(false);
+                    } else if (new_review_version_flag && !new_review_flag && required_upload_flags[0] && required_upload_flags[1]) {
+                        Log.d(TAG, "StartReview Button: Add Review Version, begin upload.");
+                        Log.d(TAG, "StartReview Button: Add Review Version, Review UUID=" + current_review_uuid);
+                        Log.d(TAG, "StartReview Button: Add Review Version, Review Title=" + review_title);
+                        Log.d(TAG, "StartReview Button: Add Review Version, Review Version=" + review_version);
+                        uploadReview(pdf_file, current_review_uuid, review_title, review_version, new_review_flag);
+
+                        ReviewTitle.setText("");
+                        new_review_flag = false;
+                        new_review_version_flag = false;
+                        StartReview.setEnabled(false);
                     } else {
-                        Toast.makeText(getApplicationContext(), "Please input all required fields!", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "StartReview Button: Not all criteria was met, please check flag logic in code.");
                     }
-                } else {
-                    Intent ReviewIntent = new Intent(
-                            UserPortal.this,
-                            StartTheReview.class);
-                    ReviewIntent.putExtra("UserProfile", CurrentUser);
-                    startActivity(ReviewIntent);
                 }
             }
         });
@@ -290,12 +439,19 @@ public class UserPortal extends AppCompatActivity {
             if (data.getData() != null) {
                 pdf_file = data.getData();
                 SelectedPDF.setText(pdf_file.getPath());
+                Log.d(TAG,"The PDF you choose is valid!");
 
                 required_upload_flags[0] = true;
                 if(required_upload_flags[0] && required_upload_flags[1]) {
+                    if (!new_review_version_flag && new_review_flag) {
+                        Log.d(TAG,"getPDF: A Brand new Review is ready to be uploaded!");
+                    } else if (new_review_version_flag && !new_review_flag) {
+                        Log.d(TAG,"getPDF: A new version for an existing Review is ready to be uploaded!");
+                    }
                     StartReview.setEnabled(true);
                 }
             } else{
+                Log.d(TAG,"getPDF: The PDF you choose is not valid or no file was chosen!");
                 Toast.makeText(this, "No file chosen", Toast.LENGTH_SHORT).show();
             }
         }
@@ -304,7 +460,7 @@ public class UserPortal extends AppCompatActivity {
     /******************************************
      *  Uploads the file to Firebase Storage.
      *****************************************/
-    private void uploadFile(Uri data, String review_uuid, String version) {
+    private void uploadFileAndUpdateDatabase(Uri data, final String review_uuid, final String title, final String version, final String pdf_file, final Boolean new_review) {
         // Upload the file to the Firebase.
         StorageReference sRef = mStorageReference.child("pdfs/" + review_uuid + "_v" + version + ".pdf");
         sRef.putFile(data)
@@ -312,15 +468,37 @@ public class UserPortal extends AppCompatActivity {
                     @SuppressWarnings("VisibleForTests")
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        Log.d(TAG, "uploadFile: Upload success.");
                         UploadStatus.setText("File Uploaded Successfully");
-                        required_upload_flags[2] = true;
+                        required_upload_flags[2] = true; // May be unnecessary.
 
-                        // Now make a whole list of entries in Firebase for the review.
+                        Log.d(TAG, "uploadFile: Updating database entries.");
+                        if (new_review) {
+                            Log.d(TAG, "uploadFile: Updated for New Review.");
+                            // Adds all the required first-time entries into the database.
+                            mDatabaseReference.child("open_reviews").child(review_uuid).child("latest_version").setValue((long) Integer.parseInt(version));
+                            mDatabaseReference.child("open_reviews").child(review_uuid).child("owner").setValue(CurrentUser.Username());
+                            mDatabaseReference.child("open_reviews").child(review_uuid).child("title").setValue(title);
+                            mDatabaseReference.child("open_reviews").child(review_uuid).child("read_only").setValue(false);
+                            mDatabaseReference.child("open_reviews").child(review_uuid).child("viewable").setValue(true);
+                        } else {
+                            Log.d(TAG, "uploadFile: Updated for added Review Version.");
+                            mDatabaseReference.child("open_reviews").child(review_uuid).child("latest_version").setValue((long) Integer.parseInt(version));
+                        }
+                        // Now just add the new version entry into the database.
+                        Log.d(TAG, "uploadFile: Added PDF file entry into database.");
+                        mDatabaseReference.child("open_reviews").child(review_uuid).child("versions").child(version).child("pdf").setValue(pdf_file);
+                        mDatabaseReference.child("open_reviews").child(review_uuid).child("versions").child(version).child("annotations").setValue("none");
+
+                        // Launch the next activity with the AllReviews data needed.
+                        Log.d(TAG, "uploadFile: Launching next activity.");
+                        LaunchReviewer();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception exception) {
+                        Log.d(TAG, "uploadFile: Upload failure.");
                         Toast.makeText(getApplicationContext(), exception.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 })
@@ -338,23 +516,12 @@ public class UserPortal extends AppCompatActivity {
     /***************************************************************
      *  Uploads Realtime Database entries and uploads the PDF file.
      ***************************************************************/
-    private void uploadReview(Uri data, String review_uuid, String version, Boolean new_review) {
+    private void uploadReview(Uri data, String review_uuid, String title, String version, Boolean new_review) {
         String firebase_pdf_file = review_uuid + "_v" + version + ".pdf";
+        Log.d(TAG,"Uploading new file to firebase: " + firebase_pdf_file);
 
         // Uploads the PDF on Firebase storage.
-        uploadFile(data, review_uuid, version);
-
-        if (new_review) {
-            // Adds all the required first-time entries into the database.
-            mDatabaseReference.child("open_reviews").child(review_uuid).child("latest_version").setValue((long) Integer.parseInt(version));
-            mDatabaseReference.child("open_reviews").child(review_uuid).child("owner").setValue(CurrentUser.Username());
-            mDatabaseReference.child("open_reviews").child(review_uuid).child("title").setValue(review_title);
-            mDatabaseReference.child("open_reviews").child(review_uuid).child("read_only").setValue(false);
-            mDatabaseReference.child("open_reviews").child(review_uuid).child("viewable").setValue(true);
-        }
-        // Now just add the new version entry into the database.
-        mDatabaseReference.child("open_reviews").child(review_uuid).child("versions").child(version).child("pdf").setValue(firebase_pdf_file);
-        mDatabaseReference.child("open_reviews").child(review_uuid).child("versions").child(version).child("annotations").setValue("none");
+        uploadFileAndUpdateDatabase(data, review_uuid, title, version, firebase_pdf_file, new_review);
     }
 
     /***********************
@@ -419,49 +586,102 @@ public class UserPortal extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 // Once the review is selected, updated the views below.
-                SelectedTitle.setText("");
-                current_review = review_title_chooser.getSelectedItem().toString();
-                Log.d(TAG, "Review Title Selection: Current Review Title: " + current_review);
+                String current_title = review_title_chooser.getSelectedItem().toString();
+                String current_version = review_version_chooser.getSelectedItem().toString();
+                existing_review_selected_flags[0] = false;
+                Log.d(TAG, "ReviewTitle Selection: Selected Review Title: " + current_title);
 
-                if (!current_review.isEmpty()) {
+                // If the user selects a non-empty choice, expand the versions spinner list.
+                if (!current_title.isEmpty()) {
+                    Log.d(TAG, "ReviewTitle Selection: OK, User has selected an existing review.");
                     existing_versions = new ArrayList<String>();
                     existing_versions.add("");
 
-                    // Obtain the current review uuid (used to differentiate the uuid).
+                    // Used for firebase uploads:
                     current_review_uuid = AllReviews.get(position - 1).UUID();
+                    review_title = current_title;
                     review_owner = AllReviews.get(position -1).Owner();
-                    Log.d(TAG, "Review Title Selection: Current Review UUID: " + current_review_uuid);
-                    Log.d(TAG, "Review Title Selection: Current Review Owner: " + review_owner);
-                    Log.d(TAG, "Review Title Selection: Logged in User: " + CurrentUser.Username());
+                    ReviewOwner.setText(review_owner);
+                    latest_version = AllReviews.get(position - 1).LatestVersion(); // Used for new version upload, only.
 
-                    // TODO: Generate the list of versions based on entries in AllReviews.
-                    FirebaseReview current_review = AllReviews.get(position - 1);
-                    ArrayList<FirebaseReviewVersion> current_review_versions = current_review.getAllVersions();
-                    for (int i = 0; i < current_review_versions.size(); ++i) {
-                        String version = current_review_versions.get(i).Version();
-                        existing_versions.add(version);
-                        Log.d(TAG, "Review Title Selection: Found version: " + version);
+                    // Debug logs.
+                    Log.d(TAG, "ReviewTitle Selection: OK, Review UUID: " + current_review_uuid);
+                    Log.d(TAG, "ReviewTitle Selection: OK, Review Title: " + review_title);
+                    Log.d(TAG, "ReviewTitle Selection: OK, Review Owner: " + review_owner);
+                    Log.d(TAG, "ReviewTitle Selection: OK, Logged in User: " + CurrentUser.Username());
+                    Log.d(TAG, "ReviewTitle Selection: OK, Latest Version: " + String.valueOf(latest_version));
+
+                    // Generates a list of versions based on reviews in AllReviews pulled from firebase.
+                    if (!new_review_flag && !new_review_version_flag) {
+                        Log.d(TAG, "ReviewTitle Selection: OK, Reviewer has not chosen a title, pull version entries.");
+                        FirebaseReview CurrentReview = AllReviews.get(position - 1);
+                        ArrayList<FirebaseReviewVersion> current_review_versions = CurrentReview.getAllVersions();
+                        for (int i = 0; i < current_review_versions.size(); ++i) {
+                            String version = current_review_versions.get(i).Version();
+                            existing_versions.add(version);
+                            Log.d(TAG, "ReviewTitle Selection: OK, Found review version: " + version);
+                        }
                     }
-                    existing_review_selected_flags[0] = true;
+
+                    if(new_review_version_flag && CurrentUser.Username().equals(review_owner)) {
+                        // CASE 1: If Switch is ON, match owner names, and then enable button accordingly.
+                        Log.d(TAG, "ReviewTitle Selection: OK, Switch is ON, Review matches ownership.");
+                        ReviewTitle.setText(current_title);
+                        ReviewTitle.setEnabled(false);
+
+                        // Required for firebase uploads:
+                        long new_version = latest_version + 1;
+                        review_version = String.valueOf(new_version);
+                        SelectedTitle.setText(current_title);
+                        SelectedVersion.setText(review_version);
+
+                        if (required_upload_flags[0] && required_upload_flags[1]) {
+                            Log.d(TAG, "ReviewTitle Selection: OK, Upload flags set. Enable button");
+                            StartReview.setEnabled(true);
+                        } else {
+                            Log.d(TAG, "ReviewTitle Selection: OK, Upload flags not all set. Disable button");
+                            StartReview.setEnabled(false);
+                        }
+                    } else if (new_review_version_flag && !CurrentUser.Username().equals(review_owner)) {
+                        // CASE 2: If Switch is ON, non-matching owners, disable the button.
+                        Log.d(TAG, "ReviewTitle Selection: OK, Switch ON, non-matching owners.");
+                        ReviewTitle.setText("Select Review you Own");
+                        SelectedTitle.setText("");
+                        SelectedVersion.setText("");
+
+                        StartReview.setEnabled(false); // No review was selected w/ correct ownership.
+                    } else {
+                        existing_review_selected_flags[0] = true;
+                    }
+
                 } else {
+                    // If the selected choice was an empty value, clear up all the views below.
+                    Log.d(TAG, "ReviewTitle Selection: Empty selection. Disable button.");
+                    review_owner = ""; // Used for New Version comparison.
+                    ReviewOwner.setText(review_owner);
+
+                    if (!new_review_flag) {
+                        // Clear the chosen review and version.
+                        SelectedTitle.setText("");
+                        SelectedVersion.setText("");
+
+                        StartReview.setEnabled(false);
+                    } else {
+                        review_title = ReviewTitle.getText().toString();
+                        review_version = "1";
+                        SelectedTitle.setText(review_title);
+                        SelectedVersion.setText(review_version);
+
+                        StartReview.setEnabled(true);
+                    }
+                    // Generally, an empty selection will not produce versions entries.
                     existing_versions = new ArrayList<String>();
                     existing_versions.add(""); // Required for button enabled flag
                     existing_review_selected_flags[0] = false;
                 }
                 ArrayAdapter<String> adpter2 = new ArrayAdapter<String> (UserPortal.this, R.layout.review_spinner, existing_versions);
                 review_version_chooser.setAdapter(adpter2);
-                Log.d(TAG, "Review Title Selection: Review Version spinner successfully updated");
-
-                if(existing_review_selected_flags[0] && existing_review_selected_flags[1]) {
-                    SelectedTitle.setText(current_review);
-                    SelectedVersion.setText(current_version);
-
-                    StartReview.setEnabled(true);
-                } else {
-                    SelectedTitle.setText("");
-                    SelectedVersion.setText("");
-                    StartReview.setEnabled(false);
-                }
+                Log.d(TAG, "ReviewTitle Selection: ReviewVersion spinner values updated!");
             }
 
             @Override
@@ -474,24 +694,46 @@ public class UserPortal extends AppCompatActivity {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 // Once the review is selected, updated the views below.
-                SelectedVersion.setText("");
-                current_version = review_version_chooser.getSelectedItem().toString();
-                Log.d(TAG, "Review Version Selection: Current Version: " + current_version);
+                String current_version = review_version_chooser.getSelectedItem().toString();
+                existing_review_selected_flags[1] = false;
+                Log.d(TAG, "ReviewVersion Selection: OK, Current Version: " + current_version);
 
                 if (!current_version.isEmpty()) {
+                    // CASE 1: If current version able to be selected, by default, existing review is being selected. No upload.
+                    Log.d(TAG, "ReviewVersion Selection: OK, Version is selected, ready for updating views.");
                     existing_review_selected_flags[1] = true;
+
+                    // You cannot set the new Review parameters if Version has some value.
+                    required_upload_flags[1] = false;
+                    SelectPDF.setEnabled(false);
+                    ReviewTitle.setText("");
+                    ReviewTitle.setEnabled(false);
                 } else {
+                    // CASE 2: No version is selected, or an empty selection is made, therefore disable flag. No upload.
                     existing_review_selected_flags[1] = false;
+
+                    if (!new_review_version_flag) {
+                        SelectPDF.setEnabled(true);
+                        ReviewTitle.setEnabled(true);
+                    }
                 }
+
+                // Normally, we don't do much on this drop down, but in this case we do.
+                String current_title = review_title_chooser.getSelectedItem().toString();
                 if(existing_review_selected_flags[0] && existing_review_selected_flags[1]) {
-                    SelectedTitle.setText(current_review);
+                    Log.d(TAG, "ReviewVersion Selection: OK, Both existing review flags set, enable button.");
+                    SelectedTitle.setText(current_title);
                     SelectedVersion.setText(current_version);
 
                     StartReview.setEnabled(true);
                 } else {
-                    SelectedTitle.setText("");
-                    SelectedVersion.setText("");
-                    StartReview.setEnabled(false);
+                    if (!new_review_flag) {
+                        Log.d(TAG, "ReviewVersion Selection: OK, Not all existing review flags set, disable button.");
+                        SelectedTitle.setText("");
+                        SelectedVersion.setText("");
+
+                        StartReview.setEnabled(false);
+                    }
                 }
             }
 
@@ -605,6 +847,14 @@ public class UserPortal extends AppCompatActivity {
             }
         });
         Log.d(TAG, "Reviews Size: " + String.valueOf(existing_reviews.size()));
+    }
+
+    public void LaunchReviewer() {
+        Intent ReviewIntent = new Intent(
+                UserPortal.this,
+                StartTheReview.class);
+        ReviewIntent.putExtra("UserProfile", CurrentUser);
+        startActivity(ReviewIntent);
     }
 
     public void onBackPressed() {
