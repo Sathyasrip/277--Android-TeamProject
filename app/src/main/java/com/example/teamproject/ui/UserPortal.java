@@ -386,7 +386,12 @@ public class UserPortal extends AppCompatActivity {
                         Log.d(TAG, "StartReview Button: New Review, Review UUID=" + review_uuid);
                         Log.d(TAG, "StartReview Button: New Review, Review Title=" + review_title);
                         Log.d(TAG, "StartReview Button: New Review, Review Version=" + review_version);
-                        uploadReview(pdf_file, review_uuid, review_title, review_version, new_review_flag);
+
+                        try {
+                            uploadReview(pdf_file, review_uuid, review_title, review_version, new_review_flag);
+                        } catch (Exception e) {
+                            Log.d(TAG, "StartReview Button: Exception found=" + e.getMessage());
+                        }
 
                         // Prevent multiple uploads.
                         ReviewTitle.setText("");
@@ -398,7 +403,12 @@ public class UserPortal extends AppCompatActivity {
                         Log.d(TAG, "StartReview Button: Add Review Version, Review UUID=" + current_review_uuid);
                         Log.d(TAG, "StartReview Button: Add Review Version, Review Title=" + review_title);
                         Log.d(TAG, "StartReview Button: Add Review Version, Review Version=" + review_version);
-                        uploadReview(pdf_file, current_review_uuid, review_title, review_version, new_review_flag);
+
+                        try {
+                            uploadReview(pdf_file, current_review_uuid, review_title, review_version, new_review_flag);
+                        } catch (Exception e) {
+                            Log.d(TAG, "StartReview Button: Exception found=" + e.getMessage());
+                        }
 
                         ReviewTitle.setText("");
                         new_review_flag = false;
@@ -745,7 +755,7 @@ public class UserPortal extends AppCompatActivity {
     }
 
     /********************************************************************
-     * Retrieves Firebase entries and returns an ArrayList of entries.
+     * Retrieves Firebase entries and updates global ArrayLists
      *******************************************************************/
     public void PullFirebaseReviews() {
         // open_reviews contains all the reviews to be played with in StartTheReview Activity.
@@ -855,6 +865,7 @@ public class UserPortal extends AppCompatActivity {
                 StartTheReview.class);
         ReviewIntent.putExtra("UserProfile", CurrentUser);
         startActivity(ReviewIntent);
+        finish();
     }
 
     public void onBackPressed() {
