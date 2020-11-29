@@ -168,7 +168,13 @@ public class StartTheReview extends AppCompatActivity {
                     Log.d(TAG, "SaveChanges: Updated Review Title in database to: " + new_review_title);
                 }
 
+                // Delete, Update or Add new comments to Firebase.
+                Log.d(TAG, "SaveChanges: Updating Firebase comments (add, edit, delete).");
+                UpdateFirebaseComments(SelectedReview.UUID(), String.valueOf(current_version),
+                        NewComments, UpdatedComments, DeletedComments);
+
                 // Upload the annotations to firebase.
+                Log.d(TAG, "SaveChanges: Saving Annotations to Firebase Storage.");
                 ExportAnnotationsToFile(SelectedReview.UUID(), String.valueOf(current_version));
             }
         });
@@ -263,6 +269,11 @@ public class StartTheReview extends AppCompatActivity {
         // TODO: The dropdown selection will modify the version data from Firebase.
         builder.setPositiveButton("Continue", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
+                // Reset all the comment-related lists.
+                NewComments = new ArrayList<SingleComment>();
+                UpdatedComments = new ArrayList<SingleComment>();
+                listOfComments = new ArrayList<SingleComment>();
+
                 dropdown_selection = version_dropdown.getSelectedItem().toString();
                 current_version = Integer.parseInt(dropdown_selection.replace("Version ", ""));
                 current_dropdown_position = version_dropdown.getSelectedItemPosition();
@@ -379,7 +390,7 @@ public class StartTheReview extends AppCompatActivity {
                     // Check if existing entry exists in the comments array, update the entry.
                     Boolean updated_comment_exists = false;
                     for (int i = 0; i < UpdatedComments.size(); ++i) {
-                        if (firebase_comment_number == UpdatedComments.get(i).CommentNumber()) {
+                        if (UpdatedComments.get(i).CommentNumber().equals(firebase_comment_number)) {
                             updated_comment_exists = true;
                             UpdatedComments.get(i).setComment(updated_comment);
                         }
@@ -436,6 +447,63 @@ public class StartTheReview extends AppCompatActivity {
             ViewCommentDetailsDialog(RowUsername.getText().toString(), RowComment.getText().toString());
         }
         RowLayout.refreshDrawableState();
+    }
+    /*********************************************
+     *  Update Firebase entries for the comments.
+     *********************************************/
+    public void UpdateFirebaseComments(String uuid, String version, List<SingleComment> new_comments, List<SingleComment> updated_comments, List<SingleComment> deleted_comments) {
+        // Update the comments in firebase.
+        String comment_username = CurrentUser.Username();
+        String comment_fullname = CurrentUser.FullName();
+        DatabaseReference comments_db = mDatabaseReference.child("open_reviews").child(uuid).child("versions").child(version).child("comments");
+
+        /*******************
+         *  Delete comments.
+         ******************/
+        for (int idx = 0; idx < deleted_comments.size(); ++idx) {
+            SingleComment deleted_comment = deleted_comments.get(idx);
+            String comment_number = deleted_comment.CommentNumber();
+
+            // Updating the new entries is exactly like making a new entry.
+            comments_db.child(comment_number).removeValue(); // No listener needed really.
+            Log.d(TAG, "UpdateFirebaseComments: DeleteComment: removed comment # " + comment_number + " for Review Version=" + version);
+        }
+        /*******************
+         *  Update comments.
+         ******************/
+        for (int idx = 0; idx < updated_comments.size(); ++idx) {
+            SingleComment updated_comment = new_comments.get(idx);
+            String comment_number = updated_comment.CommentNumber();
+            String comment_details = updated_comment.Comment();
+            String comment_timestamp = updated_comment.CreationDate();
+            String annotation_id = updated_comment.AnnotationID();
+
+            // Updating the new entries is exactly like making a new entry.
+            comments_db.child(comment_number).child("details").setValue(comment_details);
+            comments_db.child(comment_number).child("full_name").setValue(comment_fullname);
+            comments_db.child(comment_number).child("timestamp").setValue(comment_timestamp);
+            comments_db.child(comment_number).child("username").setValue(comment_username);
+            comments_db.child(comment_number).child("annotation_id").setValue(annotation_id);
+            Log.d(TAG, "UpdateFirebaseComments: Updated: updated comment # " + comment_number + " to Review Version=" + version);
+        }
+        /*******************
+         *  New comments.
+         ******************/
+        for (int idx = 0; idx < new_comments.size(); ++idx) {
+            SingleComment new_comment = new_comments.get(idx);
+            String comment_number = new_comment.CommentNumber();
+            String comment_details = new_comment.Comment();
+            String comment_timestamp = new_comment.CreationDate();
+            String annotation_id = new_comment.AnnotationID();
+
+            // Add the new entries.
+            comments_db.child(comment_number).child("details").setValue(comment_details);
+            comments_db.child(comment_number).child("full_name").setValue(comment_fullname);
+            comments_db.child(comment_number).child("timestamp").setValue(comment_timestamp);
+            comments_db.child(comment_number).child("username").setValue(comment_username);
+            comments_db.child(comment_number).child("annotation_id").setValue(annotation_id);
+            Log.d(TAG, "UpdateFirebaseComments: NewComment: added comment # " + comment_number + " to Review Version=" + version);
+        }
     }
 
     /****************************************************

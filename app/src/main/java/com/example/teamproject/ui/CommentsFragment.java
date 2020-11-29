@@ -120,14 +120,18 @@ public class CommentsFragment extends Fragment {
                     String full_name = data.child("full_name").getValue(String.class);
                     String timestamp = data.child("timestamp").getValue(String.class);
                     String username = data.child("username").getValue(String.class);
+                    String annotation_id = data.child("annotation_id").getValue(String.class);
 
                     Log.d(TAG, "Comment Found: " + comment_number);
                     SingleComment user_comment = new SingleComment(comment_number, full_name,
                             username, details, timestamp);
+                    user_comment.setAnnotationID(annotation_id);
+
                     Log.d(TAG, "Username: " + user_comment.Username());
                     Log.d(TAG, "Full Name: " + user_comment.FullName());
                     Log.d(TAG, "Timestamp: " + user_comment.CreationDate());
                     Log.d(TAG, "Details: " + user_comment.Comment());
+                    Log.d(TAG, "Annotation ID: " + user_comment.Comment());
 
                     // Add the comment to the list of comments.
                     existing_comments.add(user_comment);
