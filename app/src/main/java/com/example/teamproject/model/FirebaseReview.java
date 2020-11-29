@@ -1,15 +1,17 @@
 package com.example.teamproject.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 // Used to pull Review versions from firebase.
-public class FirebaseReview {
+public class FirebaseReview implements Serializable {
     private String review_uuid, owner, review_title;
     private long latest_version;
     private Boolean viewable, read_only;
     private ArrayList<String> num_versions = new ArrayList<String>();
     private ArrayList<FirebaseReviewVersion> versions = new ArrayList<FirebaseReviewVersion>();
 
+    public FirebaseReview() {};
     public FirebaseReview(String review_uuid, String owner, long latest_version, String review_title, Boolean read_only, Boolean viewable) {
         this.review_uuid = review_uuid;
         this.owner = owner;
@@ -29,9 +31,8 @@ public class FirebaseReview {
     public String ReviewTitle() { return this.review_title; }
     public Boolean Viewable() { return this.viewable; }
     public Boolean ReadOnly() { return this.read_only; }
-    public void addVersionNumber(String num_version) {
-        this.num_versions.add(num_version);
-    }
+    public void setLatestVersion(long new_version) { this.latest_version = new_version; }
+    public void addVersionNumber(String num_version) { this.num_versions.add(num_version); }
     public ArrayList<String> getVersionNumbers() {
         // Returns all the version numbers.
         return this.num_versions;

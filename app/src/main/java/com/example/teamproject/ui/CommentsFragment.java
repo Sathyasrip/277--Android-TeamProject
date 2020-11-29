@@ -1,36 +1,41 @@
 package com.example.teamproject.ui;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TextView;
 
-import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-
 import com.example.teamproject.R;
 import com.example.teamproject.model.CommentsListAdapter;
-import com.example.teamproject.model.ProfileSettings;
+import com.example.teamproject.model.FirebaseReview;
+import com.example.teamproject.model.FirebaseReviewVersion;
 import com.example.teamproject.model.SingleComment;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class CommentsFragment extends Fragment {
-
-    private Boolean DebugMode = true;
+    private static final String TAG = "CommentsFragment";
     ListView commentsListView;
+    String currentUser_username;
     int DocumentVersion = 0;
 
-    String currentUser_username;
+    // Firebase
+    StorageReference mStorageReference;
+    DatabaseReference mDatabaseReference;
 
     public CommentsFragment() {
         // Required empty public constructor
@@ -45,25 +50,25 @@ public class CommentsFragment extends Fragment {
                              Bundle savedInstanceState) {
         View currentView =  inflater.inflate(R.layout.fragment_comments, container, false);
 
-        // Load these crucial variables for use by the List Adapter.
+        /***************************
+         *  Firebase Authentication.
+         ***************************/
+        mStorageReference = FirebaseStorage.getInstance().getReference();
+        mDatabaseReference = FirebaseDatabase.getInstance().getReference();
+
+        /************************************
+         *  Configure Views for List Adapter.
+         ************************************/
         currentUser_username = ((StartTheReview)getActivity()).logged_in_username;
         DocumentVersion = ((StartTheReview)getActivity()).current_version;
-
-        // Since this Fragment contains a ListView we must set the adapter and load it.
         ((StartTheReview)getActivity()).CommentsView = currentView;
         commentsListView = (ListView) currentView.findViewById(R.id.listview_comments);
         ((StartTheReview)getActivity()).CommentsListView = commentsListView;
 
-        // Load the comment list.
-        if (DebugMode) {
-            // TODO: Replace this with a return from the host activity, or database call.
-            ((StartTheReview)getActivity()).listOfComments = GetCommentTestSamples(DocumentVersion);
-        }
-
-        // Create the Comments List Adapter and then set the adapter to the Comments List View.
-        ((StartTheReview)getActivity()).CommentsContext = getContext();
-        CommentsListAdapter adapter = new CommentsListAdapter(((StartTheReview)getActivity()).CommentsContext, R.layout.display_comment, currentUser_username, ((StartTheReview)getActivity()).listOfComments);
-        ((StartTheReview)getActivity()).CommentsListView.setAdapter(adapter);
+        /************************************
+         *  Load the Comments from Firebase.
+         ************************************/
+        RetrieveComments(String.valueOf(DocumentVersion));
 
         return currentView;
     }
@@ -74,70 +79,113 @@ public class CommentsFragment extends Fragment {
     @Override
     public void onAttach(Context context)
     {
-        if (DebugMode) {
-            DocumentVersion = ((StartTheReview)getActivity()).current_version;
-            currentUser_username = ((StartTheReview)getActivity()).logged_in_username;
-        }
+        // Required when switching through versions.
+        DocumentVersion = ((StartTheReview)getActivity()).current_version;
+        currentUser_username = ((StartTheReview)getActivity()).logged_in_username;
+
         super.onAttach(context);
     }
 
-    public List<SingleComment> GetCommentTestSamples(int version) {
-        // Returns a Test Sample list based on the version.
-        List<SingleComment> SampleComments = new ArrayList<SingleComment>();
+    /***************************************
+     *  Obtains the comments from Firebase.
+     ***************************************/
+    public void RetrieveComments(String version) {
+        // Obtain the context for the Comments Fragment. This is necessary to use the listener on the host activity.
+        ((StartTheReview) getActivity()).CommentsContext = getContext();
 
-        // Versions 1-3 always display 3 comments.
-        if (version == 1) {
-            SingleComment comment1 = new SingleComment(
-                    "1",
-                    "John Doe",
-                    "johndoe",
-                    "Make sure to include the correct date.",
-                    "10/31/2020 05:34"
-            );
-            SingleComment comment2 = new SingleComment(
-                    "2",
-                    "Mary Sue",
-                    "marysue",
-                    "You forgot to add a period at the end of the sentence.",
-                    "11/01/2020 12:25"
-            );
-            SingleComment comment3 = new SingleComment(
-                    "3",
-                    "Alex Mac",
-                    "alexmac",
-                    "You should probably expand on the details here some more.",
-                    "11/02/2020 18:22"
-            );
-            SampleComments.add(comment1);
-            SampleComments.add(comment2);
-            SampleComments.add(comment3);
-        } else if (version == 2) {
-            SingleComment comment1 = new SingleComment(
-                    "1",
-                    "Sarah Page",
-                    "sarahpage",
-                    "The formatting of the table is wrong, please fix it.",
-                    "11/03/2020 06:59"
-            );
-            SingleComment comment2 = new SingleComment(
-                    "2",
-                    "Harper Yue",
-                    "harperyue",
-                    "Excellent work on the sourcing!",
-                    "11/03/2020 14:44"
-            );
-            SampleComments.add(comment1);
-            SampleComments.add(comment2);
-        } else if (version == 3) {
-            SingleComment comment1 = new SingleComment(
-                    "1",
-                    "Samuel Radcliff",
-                    "sradcliff",
-                    "Coding standards are well documented. Keep up the good work!",
-                    "11/04/2020 15:53"
-            );
-            SampleComments.add(comment1);
+        // Find the review version
+        FirebaseReview CurrentReview = ((StartTheReview) getActivity()).SelectedReview;
+        ArrayList<FirebaseReviewVersion> ReviewVersions = CurrentReview.getAllVersions();
+        FirebaseReviewVersion CurrentReviewVersion = new FirebaseReviewVersion();
+        for (int i = 0; i < ReviewVersions.size(); ++i) {
+            if (ReviewVersions.get(i).Version().equals(version)) {
+                CurrentReviewVersion = ReviewVersions.get(i);
+                break;
+            }
         }
-        return SampleComments;
+        Log.d(TAG, "The Review UUID is: " + CurrentReview.UUID());
+        Log.d(TAG, "The Review Version is: " + CurrentReviewVersion.Version());
+
+        // Assume that the storage reference is already set and try to obtain list of comments.
+        DatabaseReference comments_db = mDatabaseReference.child("open_reviews").child(CurrentReview.UUID()).child("versions").child(CurrentReviewVersion.Version()).child("comments");
+        comments_db.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                List<SingleComment> existing_comments = new ArrayList<SingleComment>();
+
+                // Grab all the Comments.
+                for (DataSnapshot data : snapshot.getChildren()) {
+                    String comment_number = data.getKey();
+                    String details = data.child("details").getValue(String.class);
+                    String full_name = data.child("full_name").getValue(String.class);
+                    String timestamp = data.child("timestamp").getValue(String.class);
+                    String username = data.child("username").getValue(String.class);
+
+                    Log.d(TAG, "Comment Found: " + comment_number);
+                    SingleComment user_comment = new SingleComment(comment_number, full_name,
+                            username, details, timestamp);
+                    Log.d(TAG, "Username: " + user_comment.Username());
+                    Log.d(TAG, "Full Name: " + user_comment.FullName());
+                    Log.d(TAG, "Timestamp: " + user_comment.CreationDate());
+                    Log.d(TAG, "Details: " + user_comment.Comment());
+
+                    // Add the comment to the list of comments.
+                    existing_comments.add(user_comment);
+                }
+
+                // Finally, update with the complete list of comments.
+                ((StartTheReview) getActivity()).listOfComments = existing_comments;
+
+                // Check if there were actually any comments found. If not throw a snackbar message.
+                String snackbar_msg = "No comments were found, Add one in View tab.";
+                final Snackbar snackBar = Snackbar.make(getView(), snackbar_msg, Snackbar.LENGTH_INDEFINITE);
+                if (existing_comments.size() < 1) {
+                    snackBar.setAction("Dismiss", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            // Dismiss the snackbar when clicking on 'Dismiss'
+                            snackBar.dismiss();
+                        }
+                    });
+                    snackBar.show();
+                    Log.d(TAG, "SnackBar: " + snackbar_msg);
+                } else {
+                    Log.d(TAG, "New comments found, dismissing the Snackbar.");
+                    snackBar.dismiss(); // In case user doesn't dismiss the dialog.
+                }
+
+                // Update the adapter.
+                CommentsListAdapter adapter = new CommentsListAdapter(((StartTheReview) getActivity()).CommentsContext, R.layout.display_comment, currentUser_username, ((StartTheReview) getActivity()).listOfComments);
+                ((StartTheReview) getActivity()).CommentsListView.setAdapter(adapter);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // If the list doesn't exist or there is some error, just use show an empty list.
+                Log.d(TAG, "No comments were found in the database!");
+
+                // Generate an empty list.
+                List<SingleComment> existing_comments = new ArrayList<SingleComment>();
+                ((StartTheReview) getActivity()).listOfComments = existing_comments;
+
+                // Update the adapter.
+                CommentsListAdapter adapter = new CommentsListAdapter(((StartTheReview) getActivity()).CommentsContext, R.layout.display_comment, currentUser_username, ((StartTheReview) getActivity()).listOfComments);
+                ((StartTheReview) getActivity()).CommentsListView.setAdapter(adapter);
+
+                // Display a snackbar message indicating no comments were found.
+                String snackbar_msg = "No comments were found, Add one in View tab.";
+                final Snackbar snackBar = Snackbar.make(getView(), snackbar_msg, Snackbar.LENGTH_INDEFINITE);
+                snackBar.setAction("Dismiss", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // Dismiss the snackbar when clicking on 'Dismiss'
+                        snackBar.dismiss();
+                    }
+                });
+                snackBar.show();
+                Log.d(TAG, "SnackBar: " + snackbar_msg);
+            }
+        });
+
     }
 }

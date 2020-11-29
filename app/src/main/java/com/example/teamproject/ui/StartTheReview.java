@@ -1,10 +1,10 @@
 package com.example.teamproject.ui;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -16,7 +16,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -25,14 +24,27 @@ import androidx.viewpager.widget.ViewPager;
 import com.example.teamproject.R;
 import com.example.teamproject.model.AppThemes;
 import com.example.teamproject.model.CommentsListAdapter;
+import com.example.teamproject.model.FirebaseReview;
+import com.example.teamproject.model.FirebaseReviewVersion;
 import com.example.teamproject.model.ProfileSettings;
 import com.example.teamproject.model.ReviewPageAdapter;
 import com.example.teamproject.model.SingleComment;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+import com.pdftron.fdf.FDFDoc;
+import com.pdftron.pdf.PDFDoc;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class StartTheReview extends AppCompatActivity {
+    private static final String TAG = "StartTheReview";
     ProfileSettings CurrentUser;
     String logged_in_username;
     AppThemes AvailableThemes;
@@ -48,12 +60,12 @@ public class StartTheReview extends AppCompatActivity {
     private EditText StartReviewTitle;
     private Button RowComment, SaveChanges;
     private Spinner version_dropdown;
-    private String[] sample_versions = {"Version 1", "Version 2", "Version 3"};
-    String dropdown_selection;
+    FirebaseReview SelectedReview;
+    ArrayList<FirebaseReviewVersion> ReviewVersions;
+    String dropdown_selection, selected_version;
     int current_dropdown_position = 0, current_tab_selection = 0, current_version = 0;
 
     // The data used for updating firebase (on edits) and displaying comments.
-    private static final String TAG = "StartTheReview";
     Context CommentsContext;
     View CommentsView;
     ListView CommentsListView;
@@ -62,18 +74,68 @@ public class StartTheReview extends AppCompatActivity {
     ArrayList<SingleComment> UpdatedComments = new ArrayList<SingleComment>();
     ArrayList<SingleComment> NewComments = new ArrayList<SingleComment>();
 
+    // Firebase
+    StorageReference mStorageReference;
+    DatabaseReference mDatabaseReference;
+
+    // Used for PDFTron.
+    PDFDoc CurrentPDFDoc;
+    String CacheDirectory, FirebaseAnnotationFilename;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_review);
 
+        // Display the cache directory
         /**********************************************************************
-         *  Controls what comments can be deleted as well as Theme Background
+         *  Obtain the Cache Directory for this app, to be used as a PDF Cache.
+         **********************************************************************/
+        CacheDirectory = getApplicationContext().getCacheDir().toString();
+
+        /***************************
+         *  Firebase Authentication.
+         ***************************/
+        mStorageReference = FirebaseStorage.getInstance().getReference();
+        mDatabaseReference = FirebaseDatabase.getInstance().getReference();
+
+        /**********************************************************************
+         *  Load the Profile settings and the basic Firebase Review info.
          **********************************************************************/
         Intent i = getIntent();
         CurrentUser = (ProfileSettings) i.getSerializableExtra("UserProfile");
+        SelectedReview = (FirebaseReview) i.getSerializableExtra("ReviewContainer");
+        selected_version = (String) i.getSerializableExtra("ReviewVersion");
         logged_in_username = CurrentUser.Username();
+
         Log.i(TAG, "Logged In: " + logged_in_username);
+        Log.i(TAG, "Review UUID: " + SelectedReview.UUID());
+        Log.i(TAG, "Review Title: " + SelectedReview.ReviewTitle());
+        Log.i(TAG, "Review Owner: " + SelectedReview.Owner());
+        Log.i(TAG, "Selected Review Version: " + selected_version);
+
+        /************************************************************************
+         *  Update the list of Versions to appear in the Version select spinner.
+         ***********************************************************************/
+        ArrayList<FirebaseReviewVersion> ReviewVersions = SelectedReview.getAllVersions();
+        ArrayList<String> available_versions = new ArrayList<String>();
+        for (int idx = 0; idx < ReviewVersions.size(); ++idx) {
+            String new_version = "Version " + ReviewVersions.get(idx).Version();
+            available_versions.add(new_version);
+            Log.d(TAG, "Found New Version: " + new_version);
+
+            if (selected_version.equals(ReviewVersions.get(idx).Version())) {
+                current_dropdown_position = idx;
+                Log.d(TAG, "The version found is the version selected = " + String.valueOf(idx));
+
+                // Additionally, update the annotations filename. It will determine if annotations file exists or not.
+                FirebaseAnnotationFilename = SelectedReview.getAllVersions().get(idx).AnnotationFile().replace("/annotations/", "");
+                Log.d(TAG, "The annotations file listed on Firebase currently is: " + FirebaseAnnotationFilename);
+            }
+        }
+        version_dropdown = (Spinner) findViewById(R.id.version_dropdown);
+        ArrayAdapter<String> adpter = new ArrayAdapter<String> (this, R.layout.review_spinner, available_versions);
+        version_dropdown.setAdapter(adpter);
 
         /*****************************************************************
          *  Change the Background that was selected by the theme_dropdown
@@ -87,16 +149,10 @@ public class StartTheReview extends AppCompatActivity {
          *  If the account type is Standard, disable the EditText.
          **********************************************************************/
          StartReviewTitle = (EditText) findViewById(R.id.editTextStartReviewTitle);
-         if (CurrentUser.AccountType().equals("standard")) {
+         StartReviewTitle.setText(SelectedReview.ReviewTitle());
+         if (CurrentUser.AccountType().equals("standard") || !CurrentUser.Username().equals(SelectedReview.Owner())) {
              StartReviewTitle.setEnabled(false);
          }
-
-        /***************************************************************
-         *  Configure the dropdown to show all versions of the Review
-         ***************************************************************/
-        version_dropdown = (Spinner) findViewById(R.id.version_dropdown);
-        ArrayAdapter<String> adpter = new ArrayAdapter<String> (this, R.layout.review_spinner, sample_versions);
-        version_dropdown.setAdapter(adpter);
 
         /**************************************************************************************
          *  After the user is done editing and reviewing comments, save the changes.
@@ -105,12 +161,15 @@ public class StartTheReview extends AppCompatActivity {
         SaveChanges.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: Update Firebase entries and go back to the User Portal.
-                Intent UserPortalIntent = new Intent(
-                        StartTheReview.this,
-                        UserPortal.class);
-                UserPortalIntent.putExtra("UserProfile", CurrentUser);
-                startActivity(UserPortalIntent);
+                // Now update the title in firebase if changed in this activity.
+                String new_review_title = StartReviewTitle.getText().toString();
+                if (CurrentUser.Username().equals(SelectedReview.Owner()) && !new_review_title.isEmpty()) {
+                    mDatabaseReference.child("open_reviews").child(SelectedReview.UUID()).child("title").setValue(new_review_title);
+                    Log.d(TAG, "SaveChanges: Updated Review Title in database to: " + new_review_title);
+                }
+
+                // Upload the annotations to firebase.
+                ExportAnnotationsToFile(SelectedReview.UUID(), String.valueOf(current_version));
             }
         });
 
@@ -118,7 +177,7 @@ public class StartTheReview extends AppCompatActivity {
          *  Below will obtain the current document version from the Spinner dropdown listener.
          *************************************************************************************/
         // Set the selected item to some value.
-        version_dropdown.setSelection(current_dropdown_position);  // Example: Version 1
+        version_dropdown.setSelection(current_dropdown_position);  // Selects the correct version.
         dropdown_selection = version_dropdown.getSelectedItem().toString();
         current_version = Integer.parseInt(dropdown_selection.replace("Version ", ""));
 
@@ -161,6 +220,14 @@ public class StartTheReview extends AppCompatActivity {
             }
         });
 
+    }
+
+    /************************************************************************
+     *  Updates all the data structures used to view the PDF when selecting
+     *  the VIEW tab as well as load up all the comments.
+     ************************************************************************/
+    public void LoadReview(String version) {
+        // PDF will not change,
     }
 
     /************************************************************************
@@ -237,13 +304,7 @@ public class StartTheReview extends AppCompatActivity {
         // TODO: Remove last user login entry from SQL Database.
         builder.setPositiveButton("Goto User Portal", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                // If the user is an elevated user/reviewer, you can see and click the icon.
-                Intent UserPortalIntent = new Intent(
-                        StartTheReview.this,
-                        UserPortal.class);
-                UserPortalIntent.putExtra("UserProfile", CurrentUser);
-                startActivity(UserPortalIntent);
-                finish();
+                ReturnToPreviousActivity();
             }
         });
 
@@ -341,7 +402,6 @@ public class StartTheReview extends AppCompatActivity {
         AlertDialog dialog = builder.create();
         dialog.show();
     }
-
     public void ViewCommentDetailsDialog(String commenter_username, String comment) {
         String title = commenter_username + "'s Comment";
         String dialog_message = comment;
@@ -360,7 +420,6 @@ public class StartTheReview extends AppCompatActivity {
         AlertDialog dialog = builder.create();
         dialog.show();
     }
-
     public void ButtonClickHandler(View view) {
         //get the row the clicked button is in
         ConstraintLayout RowLayout = (ConstraintLayout) view.getParent();
@@ -377,6 +436,81 @@ public class StartTheReview extends AppCompatActivity {
             ViewCommentDetailsDialog(RowUsername.getText().toString(), RowComment.getText().toString());
         }
         RowLayout.refreshDrawableState();
+    }
+
+    /****************************************************
+     *  Exports the annotations from the PDF to Firebase.
+     ****************************************************/
+    public void ExportAnnotationsToFile(final String uuid, final String version) {
+        String cachePDF_filename = CacheDirectory + "/" + "upload.pdf";
+        String cache_annotation_file = CacheDirectory + "/" + "upload.xfdf";
+        Log.e(TAG, "ExportAnnotationsToFile: Cache File: " + cachePDF_filename);
+        Log.e(TAG, "ExportAnnotationsToFile: Cache XFDF File: " + cache_annotation_file);
+
+        // TODO: Currently this does work. Now just need to save to firebase.
+        try {
+            // Export the Annotations on the ViewPDF fragment and save it to a cache XFDF file.
+            FDFDoc doc_fields = CurrentPDFDoc.fdfExtract(PDFDoc.e_annots_only);
+            doc_fields.saveAsXFDF(cache_annotation_file);
+            Log.w(TAG, "ExportAnnotationsToFile: Saved existing annotations to the cache XFDF file.");
+
+            // Upload the cache XFDF file to firebase storage and update the firebase database entry.
+            UpdateFirebaseAnnotations(cache_annotation_file, uuid, version);
+        } catch (Exception e) {
+            Log.e(TAG, "ExportAnnotationsToFile: Could not export annotations to a cache file!");
+            e.getStackTrace();
+
+            Log.w(TAG, "ExportAnnotationsToFile: Returning to the previous activity.");
+            ReturnToPreviousActivity();
+        }
+    }
+    public void UpdateFirebaseAnnotations(final String existing_annotation_file, final String uuid, final String version) {
+        // Specify the new location in firebase to upload the .xfdf file to.
+        final String new_annotations_file = uuid + "_v" + version + ".xfdf";
+        String firebase_annotations_file = "/annotations/" + new_annotations_file;
+
+        // Try to open the Uri of the .xfdf file and upload it to firebase.
+        try {
+            Uri file = Uri.fromFile(new File(existing_annotation_file));
+            Log.d(TAG, "ExportAnnotationsToFile: The Uri from the xfdf file has been successfully obtained.");
+            mStorageReference.child(firebase_annotations_file).putFile(file)
+                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            // Upon uploading the .xfdf file to firebase storage, update the annotation entry in the firebase database.
+                            Log.d(TAG, "ExportAnnotationsToFile: Successfully uploaded the xfdf file to firebase!");
+                            mDatabaseReference.child("open_reviews").child(uuid).child("versions").child(version).child("annotations").setValue(new_annotations_file);
+                            Log.d(TAG, "ExportAnnotationsToFile: Updated the xfdf file entry on the firebase database.");
+
+                            // Change this variable to reflect the changes, so it can be viewed in the ViewPDF Fragment.
+                            FirebaseAnnotationFilename = new_annotations_file;
+                            Log.d(TAG, "ExportAnnotationsToFile: The annotations file on firebase is now: " + FirebaseAnnotationFilename);
+
+                            // After the upload is complete, return to the previous activity.
+                            Log.w(TAG, "ExportAnnotationsToFile: Returning to the previous activity.");
+                            ReturnToPreviousActivity();
+                        }
+                    });
+        } catch (Exception e) {
+            Log.e(TAG, "ExportAnnotationsToFile: Could not upload the cached XFDF file to Firebase Storage!");
+            Log.e(TAG, "ExportAnnotationsToFile: No annotation database entry was updated as well.");
+            e.printStackTrace();
+
+            Log.w(TAG, "ExportAnnotationsToFile: Returning to the previous activity.");
+            ReturnToPreviousActivity();
+        }
+    }
+
+    /**********************************************
+     *  Function to return to UserPortal activity.
+     **********************************************/
+    public void ReturnToPreviousActivity() {
+        Intent UserPortalIntent = new Intent(
+                StartTheReview.this,
+                UserPortal.class);
+        UserPortalIntent.putExtra("UserProfile", CurrentUser);
+        startActivity(UserPortalIntent);
+        finish();
     }
 
     @Override

@@ -1,12 +1,14 @@
 package com.example.teamproject.model;
 
-import java.util.ArrayList;
+import java.io.Serializable;
+import java.util.List;
 
 // Stores information about the Firebase Review Version.
-public class FirebaseReviewVersion {
+public class FirebaseReviewVersion implements Serializable {
     String version_number, pdf_file, annotation_file;
-    ArrayList<SingleComment> comments;
+    List<SingleComment> comments;
 
+    public FirebaseReviewVersion() {};
     public FirebaseReviewVersion(String version_number, String pdf_file) {
         this.version_number = version_number;
         this.pdf_file = pdf_file;
@@ -34,7 +36,13 @@ public class FirebaseReviewVersion {
     public SingleComment getComment(int index) {
         return this.comments.get(index);
     }
-    public ArrayList<SingleComment> getAllComments() {
+    public List<SingleComment> getAllComments() {
         return this.comments;
+    }
+
+    public String GetFirebasePublicUrl(String encoded_firebase_path) {
+        String firebase_public_header = "https://firebasestorage.googleapis.com";
+        String firebase_access_footer = "?alt=media";
+        return firebase_public_header + encoded_firebase_path + firebase_access_footer;
     }
 }

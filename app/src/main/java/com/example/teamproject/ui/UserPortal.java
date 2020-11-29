@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -51,8 +52,6 @@ import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.UUID;
 
 public class UserPortal extends AppCompatActivity {
@@ -72,6 +71,7 @@ public class UserPortal extends AppCompatActivity {
     private ArrayList<String> existing_reviews = new ArrayList<String>(); // empty
     private ArrayList<String> existing_versions = new ArrayList<String>();; // empty
     ArrayList<FirebaseReview> AllReviews = new ArrayList<FirebaseReview>(); // Additional information about each review.
+    private FirebaseReview SelectedReview;
     private String current_review_uuid, review_owner; // These are configured by user choosing the dropdown.
     private long latest_version; // When the switch is ON, this is incremented by 1.
     private ArrayList<String> test_reviews = new ArrayList<String>() {{
@@ -485,16 +485,30 @@ public class UserPortal extends AppCompatActivity {
                         Log.d(TAG, "uploadFile: Updating database entries.");
                         if (new_review) {
                             Log.d(TAG, "uploadFile: Updated for New Review.");
+
+                            // Create a brand new review bundle for next activity.
+                            SelectedReview = new FirebaseReview(review_uuid, CurrentUser.Username(),
+                                    (long) Integer.parseInt(version), title, false, true);
+                            FirebaseReviewVersion new_version = new FirebaseReviewVersion(version, pdf_file);
+                            SelectedReview.addVersion(new_version);
+
                             // Adds all the required first-time entries into the database.
-                            mDatabaseReference.child("open_reviews").child(review_uuid).child("latest_version").setValue((long) Integer.parseInt(version));
-                            mDatabaseReference.child("open_reviews").child(review_uuid).child("owner").setValue(CurrentUser.Username());
-                            mDatabaseReference.child("open_reviews").child(review_uuid).child("title").setValue(title);
-                            mDatabaseReference.child("open_reviews").child(review_uuid).child("read_only").setValue(false);
-                            mDatabaseReference.child("open_reviews").child(review_uuid).child("viewable").setValue(true);
+                            mDatabaseReference.child("open_reviews").child(review_uuid).child("latest_version").setValue(SelectedReview.LatestVersion());
+                            mDatabaseReference.child("open_reviews").child(review_uuid).child("owner").setValue(SelectedReview.Owner());
+                            mDatabaseReference.child("open_reviews").child(review_uuid).child("title").setValue(SelectedReview.ReviewTitle());
+                            mDatabaseReference.child("open_reviews").child(review_uuid).child("read_only").setValue(SelectedReview.ReadOnly());
+                            mDatabaseReference.child("open_reviews").child(review_uuid).child("viewable").setValue(SelectedReview.Viewable());
                         } else {
                             Log.d(TAG, "uploadFile: Updated for added Review Version.");
-                            mDatabaseReference.child("open_reviews").child(review_uuid).child("latest_version").setValue((long) Integer.parseInt(version));
+
+                            // Update the latest version and add to firebase.
+                            SelectedReview.setLatestVersion((long) Integer.parseInt(version));
+                            mDatabaseReference.child("open_reviews").child(review_uuid).child("latest_version").setValue(SelectedReview.LatestVersion());
                         }
+                        // Add a new version to the Review container for the next activity.
+                        FirebaseReviewVersion new_version = new FirebaseReviewVersion(version, pdf_file);
+                        SelectedReview.addVersion(new_version);
+
                         // Now just add the new version entry into the database.
                         Log.d(TAG, "uploadFile: Added PDF file entry into database.");
                         mDatabaseReference.child("open_reviews").child(review_uuid).child("versions").child(version).child("pdf").setValue(pdf_file);
@@ -608,11 +622,12 @@ public class UserPortal extends AppCompatActivity {
                     existing_versions.add("");
 
                     // Used for firebase uploads:
-                    current_review_uuid = AllReviews.get(position - 1).UUID();
+                    SelectedReview = AllReviews.get(position - 1); // Used for StartTheReview activity.
+                    current_review_uuid = SelectedReview.UUID();
                     review_title = current_title;
-                    review_owner = AllReviews.get(position -1).Owner();
+                    review_owner = SelectedReview.Owner();
                     ReviewOwner.setText(review_owner);
-                    latest_version = AllReviews.get(position - 1).LatestVersion(); // Used for new version upload, only.
+                    latest_version = SelectedReview.LatestVersion(); // Used for new version upload, only.
 
                     // Debug logs.
                     Log.d(TAG, "ReviewTitle Selection: OK, Review UUID: " + current_review_uuid);
@@ -860,10 +875,18 @@ public class UserPortal extends AppCompatActivity {
     }
 
     public void LaunchReviewer() {
+        // Obtain the Review version # from the TextView object, SelectedVersion
+        String selected_version = SelectedVersion.getText().toString();  // Ex. "1"
+        Log.d(TAG, "LaunchReviewer: Selected Review version: " + selected_version);
+        Log.d(TAG, "LaunchReviewer: Selected Review UUID: " + SelectedReview.UUID());
+
         Intent ReviewIntent = new Intent(
                 UserPortal.this,
                 StartTheReview.class);
         ReviewIntent.putExtra("UserProfile", CurrentUser);
+        ReviewIntent.putExtra("ReviewContainer", SelectedReview);
+        ReviewIntent.putExtra("ReviewVersion", selected_version);
+
         startActivity(ReviewIntent);
         finish();
     }
