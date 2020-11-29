@@ -343,41 +343,43 @@ public class StartTheReview extends AppCompatActivity {
         editable_comment_view.setLayoutParams(lp);
         builder.setView(editable_comment_view);
 
+        // TODO: Removing the Delete option as it will not sync with the View PDF Tab.
         // If the user chooses "Cancel", just dismiss the dialog box.
-        builder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+        //builder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 dialog.dismiss();
             }
         });
 
         // If the user chooses "Delete", the comment in question is deleted.
-        builder.setNegativeButton("Delete", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                String delete_comment = editable_comment_view.getText().toString();
+        //builder.setNegativeButton("Delete", new DialogInterface.OnClickListener() {
+        //    public void onClick(DialogInterface dialog, int id) {
+        //        String delete_comment = editable_comment_view.getText().toString();
 
-                // Add a new entry into DeletedComments array.
-                String empty_date = "";
-                SingleComment del_comment = new SingleComment(
-                        firebase_comment_number, commenter_fullname, "",
-                        delete_comment, empty_date);
-                del_comment.setCreation_date();
-                DeletedComments.add(del_comment);
+        //        // Add a new entry into DeletedComments array.
+        //        String empty_date = "";
+        //        SingleComment del_comment = new SingleComment(
+        //                firebase_comment_number, commenter_fullname, "",
+        //                delete_comment, empty_date);
+        //        del_comment.setCreation_date();
+        //        DeletedComments.add(del_comment);
 
-                // Delete the comment in the comment list array by comparing the comment #.
-                for (int i = 0; i < listOfComments.size(); ++i) {
-                    if (listOfComments.get(i).CommentNumber().equals(firebase_comment_number)) {
-                        listOfComments.remove(i);
-                        break;
-                    }
-                }
+        //        // Delete the comment in the comment list array by comparing the comment #.
+        //        for (int i = 0; i < listOfComments.size(); ++i) {
+        //            if (listOfComments.get(i).CommentNumber().equals(firebase_comment_number)) {
+        //                listOfComments.remove(i);
+        //                break;
+        //            }
+        //        }
 
-                // Finally, reload the List ArrayAdapter..
-                CommentsListAdapter adapter = new CommentsListAdapter(CommentsContext, R.layout.display_comment, commenter_username, listOfComments);
-                CommentsListView.setAdapter(adapter);
+        //       // Finally, reload the List ArrayAdapter..
+        //       CommentsListAdapter adapter = new CommentsListAdapter(CommentsContext, R.layout.display_comment, commenter_username, listOfComments);
+        //       CommentsListView.setAdapter(adapter);
 
-                dialog.dismiss();
-            }
-        });
+        //        dialog.dismiss();
+        //    }
+        //});
 
         // If the user chooses "Modify", The user's text is modified.
         builder.setPositiveButton("Modify", new DialogInterface.OnClickListener() {

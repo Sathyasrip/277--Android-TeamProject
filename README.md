@@ -21,8 +21,17 @@ Once the application has finished with Alpha and entered its Beta stage, the ins
 ## Reviews
 Throughout the life cycle of our application, the users of this app will create or critique version controlled documents called 'Reviews'. A Review is essentially a PDF file with a linked comments payload and annotations file which can be viewable in our application to critique a Review owner's uploaded PDF. By default on registration, only approved users are able to start a new review or delete their current existing reviews, one version at a time. Standard users (new users to this app) can only view existing reviews and make comments and highlights to the existing Review version. This is necessary to prevent trolling and unprofessional document uploads.
 
+## Reviewers vs Critiquers
+Reviewers are elevated users who submit reviews to get critiqued by their peers (every new and standard user). Critiquers criqitique reviewers research by adding annotations to the PDF which generates comments. Some other differences between the two include the fact that Reviewers can delete their entire review or a particular version, and they are allowed to change their Review title. Critiquers sole responsibility is just to criqitue so they cannot submit any review.
+
+## Comments
+Comments can be added from the View PDF tab through the use of a the Comment Text Box. Other annotations are currently unsupported, but may be supported later on, in future revisions. Comments can be added by anyone. However, comments can only be modified or deleted by the user who originally generated the comment. Any user trying to modify a comment that does not belong to them will be unable to (theoretically, anyway).
+
 ## Server and Authentication
 This application is powered with Google Cloud & Firebase. Firebase is used for User authentication, and Firebase is also used to store the list of comments for the existing review being critiqued by users in real time, as well as act as the main storage for profile pictures, annotation files, and review PDF files whose entries are currently open on the open_reviews database.
 
 ## Last User Login
-A simple MySQL database is used to store an encrypted username and password for the last user login. If the login is successful, the single entry stays in the MySQL database. If login was unsuccessful, on bootup of the application, the user will go to the Login screen directly. It is also important to note that there currently is no MySQL database called "last_login" or there is no MySQL entry in the "last_login" database, the user will be directed to the login page automatically.
+Firebase authentication is used to manage the last user login. When the user logs in successfully for the first time, the previous credentials are saved and reused (presuming no password changes have occurred). This automatic login occurs right after the splash screen for the app.
+
+## Future improvements
+Allow additional annotations such as highlighting to be tied to comments. As of right now, only the Annotation Comment Text Box is supported.
