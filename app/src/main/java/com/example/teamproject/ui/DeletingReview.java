@@ -74,6 +74,7 @@ public class DeletingReview extends AppCompatActivity {
     private long latest_version; // This is decremented by 1 if the selected review for deletion is equal to this number.
     private int review_index = 0, num_versions = 0;
     private Boolean PurgeEntireReviewFlag = false;
+    private Boolean deleting_review_flag = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -183,6 +184,7 @@ public class DeletingReview extends AppCompatActivity {
         // If the user chooses to press "Yes", only then, return to the user portal
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
+                deleting_review_flag = true;
                 DeleteFileAndUpdateDatabase(review_index, review_uuid, review_version, PurgeEntireReviewFlag);
             }
         });
@@ -288,71 +290,77 @@ public class DeletingReview extends AppCompatActivity {
         reviews_db.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                // Initialize the String ArrayLists.
-                existing_reviews = new ArrayList<String>();
-                existing_versions = new ArrayList<String>();
+                if (!deleting_review_flag) {
+                    // Initialize the String ArrayLists.
+                    AllReviews = new ArrayList<FirebaseReview>();
+                    existing_reviews = new ArrayList<String>();
+                    existing_versions = new ArrayList<String>();
 
-                // Add the 'empty' entries to the String ArrayLists.
-                existing_reviews.add(""); // Required for button enabled flag.
-                existing_versions.add(""); // Required for button enabled flag.
+                    // Add the 'empty' entries to the String ArrayLists.
+                    existing_reviews.add(""); // Required for button enabled flag.
+                    existing_versions.add(""); // Required for button enabled flag.
 
-                Log.d(TAG, "Firebase Reviews Pull: Access Success! Grabbing Children...");
-                for (DataSnapshot data : dataSnapshot.getChildren()) {
-                    // These children are essentially the UUIDs representing the Reviews.
-                    String current_uuid = data.getKey();
-                    String owner = data.child("owner").getValue(String.class);
-                    long latest_version = data.child("latest_version").getValue(long.class);
-                    Boolean read_only = data.child("read_only").getValue(Boolean.class);
-                    String review_title = data.child("title").getValue(String.class);
-                    Boolean viewable = data.child("viewable").getValue(Boolean.class);
+                    Log.d(TAG, "Firebase Reviews Pull: Access Success! Grabbing Children...");
+                    for (DataSnapshot data : dataSnapshot.getChildren()) {
+                        // These children are essentially the UUIDs representing the Reviews.
+                        String current_uuid = data.getKey();
+                        String owner = data.child("owner").getValue(String.class);
+                        long latest_version = data.child("latest_version").getValue(long.class);
+                        Boolean read_only = data.child("read_only").getValue(Boolean.class);
+                        String review_title = data.child("title").getValue(String.class);
+                        Boolean viewable = data.child("viewable").getValue(Boolean.class);
 
-                    //TODO: Check if viewable flag is true. If false, skip the review.
-                    if (read_only || !owner.equals(CurrentUser.Username())) {
-                        Log.d(TAG, "Firebase Reviews Pull: Review=" + current_uuid + " is not viewable. Skipping...");
-                        continue;
-                    }
-
-                    FirebaseReview review = new FirebaseReview(current_uuid, owner, latest_version,
-                            review_title, read_only, viewable);
-                    Log.d(TAG, "Firebase Reviews Pull: Child, uuid:" + review.UUID());
-                    Log.d(TAG, "Firebase Reviews Pull: Child, owner:" + review.Owner());
-                    Log.d(TAG, "Firebase Reviews Pull: Child, latest_version:" + String.valueOf(review.LatestVersion()));
-
-                    // Get more information inside "versions"
-                    for (DataSnapshot nested_data : data.child("versions").getChildren()) {
-                        String version_number = nested_data.getKey();
-                        String version_pdf = nested_data.child("pdf").getValue(String.class);
-                        String version_annotation;
-
-                        FirebaseReviewVersion version = new FirebaseReviewVersion(version_number, version_pdf);
-                        review.addVersionNumber(version_number);
-                        Log.d(TAG, "Firebase Reviews Pull: Child, Version:" + version.Version());
-                        Log.d(TAG, "Firebase Reviews Pull: Child, pdf file:" + version.PDF());
                         try {
-                            version_annotation = nested_data.child("annotations").getValue(String.class);
-                            Log.d(TAG, "Firebase Reviews Pull: Child, annotation file:" + version_annotation);
-                        } catch (Exception e){
-                            version_annotation = "";
-                            Log.d(TAG, "Firebase Reviews Pull: Child, annotation file - not available!");
+                            // Check if viewable flag is true. If false, skip the review.
+                            if (!viewable || !owner.equals(CurrentUser.Username())) {
+                                Log.d(TAG, "Firebase Reviews Pull: Review=" + current_uuid + " is not viewable. Skipping...");
+                                continue;
+                            }
+
+                            FirebaseReview review = new FirebaseReview(current_uuid, owner, latest_version,
+                                    review_title, read_only, viewable);
+                            Log.d(TAG, "Firebase Reviews Pull: Child, uuid:" + review.UUID());
+                            Log.d(TAG, "Firebase Reviews Pull: Child, owner:" + review.Owner());
+                            Log.d(TAG, "Firebase Reviews Pull: Child, latest_version:" + String.valueOf(review.LatestVersion()));
+
+                            // Get more information inside "versions"
+                            for (DataSnapshot nested_data : data.child("versions").getChildren()) {
+                                String version_number = nested_data.getKey();
+                                String version_pdf = nested_data.child("pdf").getValue(String.class);
+                                String version_annotation;
+
+                                FirebaseReviewVersion version = new FirebaseReviewVersion(version_number, version_pdf);
+                                review.addVersionNumber(version_number);
+                                Log.d(TAG, "Firebase Reviews Pull: Child, Version:" + version.Version());
+                                Log.d(TAG, "Firebase Reviews Pull: Child, pdf file:" + version.PDF());
+                                try {
+                                    version_annotation = nested_data.child("annotations").getValue(String.class);
+                                    Log.d(TAG, "Firebase Reviews Pull: Child, annotation file:" + version_annotation);
+                                } catch (Exception e){
+                                    version_annotation = "";
+                                    Log.d(TAG, "Firebase Reviews Pull: Child, annotation file - not available!");
+                                }
+                                version.setAnnotationFile(version_annotation);
+                                review.addVersion(version);
+                                Log.d(TAG, "Firebase Reviews Pull: Child, Added Version inside Review.");
+                            }
+                            AllReviews.add(review);  // Will be used to pass to next activity.
+                            existing_reviews.add(review_title); // This will update the drop down list.
+                            Log.d(TAG, "Firebase Reviews Pull: Child, Added Review == Title:" + review.ReviewTitle());
+                        } catch (Exception e) {
+                            Log.d(TAG, "Firebase Reviews Pull: ERROR: Probably in the middle of upload, so ignore this entry.");
                         }
-                        version.setAnnotationFile(version_annotation);
-                        review.addVersion(version);
-                        Log.d(TAG, "Firebase Reviews Pull: Child, Added Version inside Review.");
                     }
-                    AllReviews.add(review);  // Will be used to pass to next activity.
-                    existing_reviews.add(review_title); // This will update the drop down list.
-                    Log.d(TAG, "Firebase Reviews Pull: Child, Added Review == Title:" + review.ReviewTitle());
+
+                    // Finally, update the spinners with the new data.
+                    ArrayAdapter<String> adpter1 = new ArrayAdapter<String> (DeletingReview.this, R.layout.review_spinner, existing_reviews);
+                    review_title_chooser.setAdapter(adpter1);
+                    Log.d(TAG, "Firebase Reviews Pull: Review Title spinner successfully updated!");
+
+                    ArrayAdapter<String> adpter2 = new ArrayAdapter<String> (DeletingReview.this, R.layout.review_spinner, existing_versions);
+                    review_version_chooser.setAdapter(adpter2);
+                    Log.d(TAG, "Firebase Reviews Pull: Review Version spinner successfully updated!");
                 }
-
-                // Finally, update the spinners with the new data.
-                ArrayAdapter<String> adpter1 = new ArrayAdapter<String> (DeletingReview.this, R.layout.review_spinner, existing_reviews);
-                review_title_chooser.setAdapter(adpter1);
-                Log.d(TAG, "Firebase Reviews Pull: Review Title spinner successfully updated!");
-
-                ArrayAdapter<String> adpter2 = new ArrayAdapter<String> (DeletingReview.this, R.layout.review_spinner, existing_versions);
-                review_version_chooser.setAdapter(adpter2);
-                Log.d(TAG, "Firebase Reviews Pull: Review Version spinner successfully updated!");
-
             }
 
             @Override
@@ -406,21 +414,36 @@ public class DeletingReview extends AppCompatActivity {
 
     public void DeleteFileAndUpdateDatabase(int index, final String review_uuid, final String review_version, final Boolean purge_review) {
         final ArrayList<FirebaseReviewVersion> versions = AllReviews.get(index).getAllVersions();
+        DeleteReview.setEnabled(false);
 
         if (purge_review) {
             PurgeDatabaseEntries(review_uuid, review_version, versions.size(), purge_review);
 
             for (int i = 0; i < versions.size(); ++i) {
-                String firebase_pdf_file = versions.get(i).PDF();
+                final String firebase_pdf_file = versions.get(i).PDF();
+                final String firebase_annotation_File = versions.get(i).AnnotationFile();
 
                 final int counter = i;
-                StorageReference sRef = mStorageReference.child(firebase_pdf_file);
+                final StorageReference sRef = mStorageReference.child(firebase_pdf_file);
                 sRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "PurgeDatabase: Deleted PDF: " + firebase_pdf_file);
                         if (counter == (versions.size() - 1)) {
-                            Log.d(TAG, "PurgeDatabase: Finished deleting all the PDFs. Launching Activity.");
-                            DeleteReview.setEnabled(false);
+                            Log.d(TAG, "PurgeDatabase: Finished deleting all the PDFs.");
+
+                            // Now start deleting the annotation file if it is not "none"
+                            if (!firebase_annotation_File.equals("none")) {
+                                mStorageReference.child(firebase_annotation_File).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        Log.d(TAG, "PurgeDatabase: Deleted annotation: " + firebase_annotation_File);
+                                    }
+                                });
+                            }
+
+                            // Finally, return to the user profile.
+                            Log.d(TAG, "PurgeDatabase: Returning to User Portal.");
                             ReturnToUserProfile();
                         }
                     }
@@ -431,14 +454,26 @@ public class DeletingReview extends AppCompatActivity {
             for (int i = 0; i < versions.size(); ++i) {
                 if (versions.get(i).Version() == review_version) {
                     PurgeDatabaseEntries(review_uuid, review_version, versions.size(), purge_review);
-                    String firebase_pdf_file = versions.get(i).PDF();
+                    final String firebase_pdf_file = versions.get(i).PDF();
+                    final String firebase_annotation_File = versions.get(i).AnnotationFile();
 
                     StorageReference sRef = mStorageReference.child(firebase_pdf_file);
                     sRef.delete().addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            Log.d(TAG, "PurgeDatabase: Finished deleting the single PDF. Launching Activity.");
-                            DeleteReview.setEnabled(false);
+                            Log.d(TAG, "PurgeDatabase: Deleted PDF: " + firebase_pdf_file);
+
+                            // Now start deleting the annotation file if it is not "none"
+                            if (!firebase_annotation_File.equals("none")) {
+                                mStorageReference.child(firebase_annotation_File).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void aVoid) {
+                                        // Do nothing. let it run the upload in the background.
+                                        Log.d(TAG, "PurgeDatabase: Deleted annotation: " + firebase_annotation_File);
+                                    }
+                                });
+                            }
+                            Log.d(TAG, "PurgeDatabase: Returning to User Portal.");
                             ReturnToUserProfile();
                         }
                     });

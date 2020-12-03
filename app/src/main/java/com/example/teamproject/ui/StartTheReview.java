@@ -23,7 +23,6 @@ import androidx.core.content.ContextCompat;
 import androidx.viewpager.widget.ViewPager;
 import com.example.teamproject.R;
 import com.example.teamproject.model.AppThemes;
-import com.example.teamproject.model.CommentsListAdapter;
 import com.example.teamproject.model.FirebaseReview;
 import com.example.teamproject.model.FirebaseReviewVersion;
 import com.example.teamproject.model.ProfileSettings;
@@ -57,6 +56,7 @@ public class StartTheReview extends AppCompatActivity {
 
     // Used for all the main views in the Activity.
     private ConstraintLayout ThisLayout;
+    private TextView SaveChangesStatus;
     private EditText StartReviewTitle;
     private Button RowComment, SaveChanges;
     private Spinner version_dropdown;
@@ -87,11 +87,16 @@ public class StartTheReview extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.start_review);
 
-        // Display the cache directory
         /**********************************************************************
          *  Obtain the Cache Directory for this app, to be used as a PDF Cache.
          **********************************************************************/
         CacheDirectory = getApplicationContext().getCacheDir().toString();
+
+        /*****************************
+         *  Update non-critical views.
+         *****************************/
+        SaveChangesStatus = (TextView) findViewById(R.id.tv_save_changes_status);
+        SaveChangesStatus.setText(""); // Reset the text here because nothing is being saved.
 
         /***************************
          *  Firebase Authentication.
@@ -161,10 +166,16 @@ public class StartTheReview extends AppCompatActivity {
         SaveChanges.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Since we are saving changes, prevent the user from interacting with the activity during the upload.
+                version_dropdown.setEnabled(false);
+                StartReviewTitle.setEnabled(false);
+                SaveChanges.setEnabled(false);
+
                 // Now update the title in firebase if changed in this activity.
                 String new_review_title = StartReviewTitle.getText().toString();
                 if (CurrentUser.Username().equals(SelectedReview.Owner()) && !new_review_title.isEmpty()) {
                     mDatabaseReference.child("open_reviews").child(SelectedReview.UUID()).child("title").setValue(new_review_title);
+                    SaveChangesStatus.setText("Upload: Review Title updated.");
                     Log.d(TAG, "SaveChanges: Updated Review Title in database to: " + new_review_title);
                 }
 
@@ -172,6 +183,7 @@ public class StartTheReview extends AppCompatActivity {
                 Log.d(TAG, "SaveChanges: Updating Firebase comments (add, edit, delete).");
                 UpdateFirebaseComments(SelectedReview.UUID(), String.valueOf(current_version),
                         NewComments, UpdatedComments, DeletedComments);
+                SaveChangesStatus.setText("Upload: Comments updated.");
 
                 // Upload the annotations to firebase.
                 Log.d(TAG, "SaveChanges: Saving Annotations to Firebase Storage.");
@@ -277,8 +289,13 @@ public class StartTheReview extends AppCompatActivity {
                 dropdown_selection = version_dropdown.getSelectedItem().toString();
                 current_version = Integer.parseInt(dropdown_selection.replace("Version ", ""));
                 current_dropdown_position = version_dropdown.getSelectedItemPosition();
+
+                // We also need to update the Annotations File from firebase.
+                FirebaseAnnotationFilename = SelectedReview.getAllVersions().get(current_dropdown_position).AnnotationFile().replace("/annotations/", "");
+                Log.d(TAG, "ChangeVersionsDialog: Review Version Annotation is now: " + FirebaseAnnotationFilename);
+
                 version_changed = true;
-                LoadReviewVersion();
+                LoadReviewVersion(); // TODO: Perhaps start PDF & annotations download on review change.
                 selectTab(current_tab_selection);
                 version_changed = false;
             }
@@ -523,10 +540,12 @@ public class StartTheReview extends AppCompatActivity {
             FDFDoc doc_fields = CurrentPDFDoc.fdfExtract(PDFDoc.e_annots_only);
             doc_fields.saveAsXFDF(cache_annotation_file);
             Log.w(TAG, "ExportAnnotationsToFile: Saved existing annotations to the cache XFDF file.");
+            SaveChangesStatus.setText("Upload: Annotations file generated.");
 
             // Upload the cache XFDF file to firebase storage and update the firebase database entry.
             UpdateFirebaseAnnotations(cache_annotation_file, uuid, version);
         } catch (Exception e) {
+            SaveChangesStatus.setText("Upload: Annotations file unavailable.");
             Log.e(TAG, "ExportAnnotationsToFile: Could not export annotations to a cache file!");
             e.getStackTrace();
 
@@ -543,6 +562,8 @@ public class StartTheReview extends AppCompatActivity {
         try {
             Uri file = Uri.fromFile(new File(existing_annotation_file));
             Log.d(TAG, "ExportAnnotationsToFile: The Uri from the xfdf file has been successfully obtained.");
+
+            SaveChangesStatus.setText("Upload: Uploading Annotations file...");
             mStorageReference.child(firebase_annotations_file).putFile(file)
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
@@ -555,6 +576,7 @@ public class StartTheReview extends AppCompatActivity {
                             // Change this variable to reflect the changes, so it can be viewed in the ViewPDF Fragment.
                             FirebaseAnnotationFilename = new_annotations_file;
                             Log.d(TAG, "ExportAnnotationsToFile: The annotations file on firebase is now: " + FirebaseAnnotationFilename);
+                            SaveChangesStatus.setText("Upload: Annotations file uploaded!");
 
                             // After the upload is complete, return to the previous activity.
                             Log.w(TAG, "ExportAnnotationsToFile: Returning to the previous activity.");
@@ -562,6 +584,7 @@ public class StartTheReview extends AppCompatActivity {
                         }
                     });
         } catch (Exception e) {
+            SaveChangesStatus.setText("Upload: Unable to upload Annotations file!");
             Log.e(TAG, "ExportAnnotationsToFile: Could not upload the cached XFDF file to Firebase Storage!");
             Log.e(TAG, "ExportAnnotationsToFile: No annotation database entry was updated as well.");
             e.printStackTrace();

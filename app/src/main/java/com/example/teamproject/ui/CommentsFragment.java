@@ -138,12 +138,55 @@ public class CommentsFragment extends Fragment {
                 }
 
                 // Finally, update with the complete list of comments.
-                ((StartTheReview) getActivity()).listOfComments = existing_comments;
+                // We must add a try because this will be called again when we do an upload and may cause a crash.
+                try {
+                    ((StartTheReview) getActivity()).listOfComments = existing_comments;
 
-                // Check if there were actually any comments found. If not throw a snackbar message.
-                String snackbar_msg = "No comments were found, Add one in View tab.";
-                final Snackbar snackBar = Snackbar.make(getView(), snackbar_msg, Snackbar.LENGTH_INDEFINITE);
-                if (existing_comments.size() < 1) {
+                    // Check if there were actually any comments found. If not throw a snackbar message.
+                    String snackbar_msg = "No comments were found, Add one in View tab.";
+                    final Snackbar snackBar = Snackbar.make(getView(), snackbar_msg, Snackbar.LENGTH_INDEFINITE);
+                    if (existing_comments.size() < 1) {
+                        snackBar.setAction("Dismiss", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                // Dismiss the snackbar when clicking on 'Dismiss'
+                                snackBar.dismiss();
+                            }
+                        });
+                        snackBar.show();
+                        Log.d(TAG, "SnackBar: " + snackbar_msg);
+                    } else {
+                        Log.d(TAG, "New comments found, dismissing the Snackbar.");
+                        snackBar.dismiss(); // In case user doesn't dismiss the dialog.
+                    }
+                    // Update the adapter.
+                    CommentsListAdapter adapter = new CommentsListAdapter(((StartTheReview) getActivity()).CommentsContext, R.layout.display_comment, currentUser_username, ((StartTheReview) getActivity()).listOfComments);
+                    ((StartTheReview) getActivity()).CommentsListView.setAdapter(adapter);
+
+                } catch (Exception e) {
+                    Log.d(TAG, "RetrieveComments: ERROR: Unable to update the List of comments. New updates were found on firebase after doing an upload!");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                // If the list doesn't exist or there is some error, just use show an empty list.
+                Log.d(TAG, "No comments were found in the database!");
+
+                List<SingleComment> existing_comments = new ArrayList<SingleComment>();
+
+                // Generate an empty list.
+                // We must add a try because this will be called again when we do an upload and may cause a crash.
+                try {
+                    ((StartTheReview) getActivity()).listOfComments = existing_comments;
+
+                    // Update the adapter.
+                    CommentsListAdapter adapter = new CommentsListAdapter(((StartTheReview) getActivity()).CommentsContext, R.layout.display_comment, currentUser_username, ((StartTheReview) getActivity()).listOfComments);
+                    ((StartTheReview) getActivity()).CommentsListView.setAdapter(adapter);
+
+                    // Display a snackbar message indicating no comments were found.
+                    String snackbar_msg = "No comments were found, Add one in View tab.";
+                    final Snackbar snackBar = Snackbar.make(getView(), snackbar_msg, Snackbar.LENGTH_INDEFINITE);
                     snackBar.setAction("Dismiss", new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -153,43 +196,10 @@ public class CommentsFragment extends Fragment {
                     });
                     snackBar.show();
                     Log.d(TAG, "SnackBar: " + snackbar_msg);
-                } else {
-                    Log.d(TAG, "New comments found, dismissing the Snackbar.");
-                    snackBar.dismiss(); // In case user doesn't dismiss the dialog.
+                } catch (Exception e) {
+                    Log.d(TAG, "RetrieveComments: ERROR: Unable to update the List of comments. Could be we are leaving the activity after modifying comments.");
                 }
-
-                // Update the adapter.
-                CommentsListAdapter adapter = new CommentsListAdapter(((StartTheReview) getActivity()).CommentsContext, R.layout.display_comment, currentUser_username, ((StartTheReview) getActivity()).listOfComments);
-                ((StartTheReview) getActivity()).CommentsListView.setAdapter(adapter);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                // If the list doesn't exist or there is some error, just use show an empty list.
-                Log.d(TAG, "No comments were found in the database!");
-
-                // Generate an empty list.
-                List<SingleComment> existing_comments = new ArrayList<SingleComment>();
-                ((StartTheReview) getActivity()).listOfComments = existing_comments;
-
-                // Update the adapter.
-                CommentsListAdapter adapter = new CommentsListAdapter(((StartTheReview) getActivity()).CommentsContext, R.layout.display_comment, currentUser_username, ((StartTheReview) getActivity()).listOfComments);
-                ((StartTheReview) getActivity()).CommentsListView.setAdapter(adapter);
-
-                // Display a snackbar message indicating no comments were found.
-                String snackbar_msg = "No comments were found, Add one in View tab.";
-                final Snackbar snackBar = Snackbar.make(getView(), snackbar_msg, Snackbar.LENGTH_INDEFINITE);
-                snackBar.setAction("Dismiss", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        // Dismiss the snackbar when clicking on 'Dismiss'
-                        snackBar.dismiss();
-                    }
-                });
-                snackBar.show();
-                Log.d(TAG, "SnackBar: " + snackbar_msg);
             }
         });
-
     }
 }

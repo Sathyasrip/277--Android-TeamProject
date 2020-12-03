@@ -356,8 +356,9 @@
         android:id="@+id/tv_upload_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="#CCFFFFFF"
         android:fontFamily="@font/antic"
-        android:textColor="@color/colorWhite"
+        android:textColor="@color/colorBlack"
         app:layout_constraintEnd_toEndOf="@+id/button_start_review"
         app:layout_constraintStart_toStartOf="@+id/button_start_review"
         app:layout_constraintTop_toBottomOf="@+id/button_start_review" />

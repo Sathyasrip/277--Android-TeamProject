@@ -178,9 +178,11 @@ public class ViewDocFragment extends Fragment {
         try {
             // Use the cache file directly in order to work with current annotations.
             ((StartTheReview)getActivity()).CurrentPDFDoc = new PDFDoc(cached_pdf_filename);
+            Log.d(TAG, "viewFromCachedFile: Cache PDF file: " + cached_pdf_filename);
 
             // Only imports annotations if available from Firebase and if download was successful.
-            if (!((StartTheReview)getActivity()).FirebaseAnnotationFilename.equals("none")) {
+            Log.d(TAG, "viewFromCachedFile: Annotation file: " + ((StartTheReview)getActivity()).FirebaseAnnotationFilename);
+            if (((StartTheReview)getActivity()).FirebaseAnnotationFilename.contains(".xfdf")) {
                 Log.w(TAG, "viewFromCachedFile: There is an XFDF file in firebase waiting to be downloaded.");
 
                 // Get the firebase url for the XFDF file and save it to a cached file directly.
@@ -203,6 +205,14 @@ public class ViewDocFragment extends Fragment {
                         } catch (Exception e) {
                             Log.e(TAG, "viewFromCachedFile: Could not load annotations from XFDF file!");
                             e.getStackTrace();
+
+                            // Finally, load the cached PDF (without annotations).
+                            try {
+                                mPdfViewCtrl.setDoc(((StartTheReview)getActivity()).CurrentPDFDoc);
+                                Log.d(TAG, "viewFromCachedFile: Loaded Cached PDF w/out Annotations.");
+                            } catch (PDFNetException ex) {
+                                ex.printStackTrace();
+                            }
                         }
                     }
                 });
