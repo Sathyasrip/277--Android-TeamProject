@@ -320,9 +320,15 @@ public class ViewDocFragment extends Fragment {
                                 int comment_count = 0;
                                 Boolean existing_comment = false;
                                 int found_comment_index = 0;
-                                for (int idx = 0; idx < ((StartTheReview)getActivity()).listOfComments.size(); ++idx) {
+
+                                // Search through comments for the comment we want to modify.
+                                int number_of_comments = ((StartTheReview)getActivity()).listOfComments.size();
+                                Log.d(TAG, "AnnotationsModified: Searching for the comment to modify... (Total comments = " + String.valueOf(number_of_comments) + ")");
+                                Log.d(TAG, "AnnotationsModified: Searching for Comment w/ UUID=" + fixed_uuid);
+                                for (int idx = 0; idx < number_of_comments; ++idx) {
                                     SingleComment current_comment = ((StartTheReview)getActivity()).listOfComments.get(idx);
                                     comment_count = Integer.parseInt(current_comment.CommentNumber());
+                                    Log.d(TAG, "AnnotationsModified: Comment #" + String.valueOf(idx + 1) + ": UUID=" + current_comment.AnnotationID());
 
                                     // Check if the comment exists, and if it does, stop counting.
                                     if (current_comment.AnnotationID().equals(fixed_uuid)) {
@@ -333,6 +339,7 @@ public class ViewDocFragment extends Fragment {
                                     }
                                 }
 
+                                Log.d(TAG, "AnnotationsModified: Finished searching for comments.");
                                 // If the comment already existed, simply update the comment.
                                 if (existing_comment) {
                                     // Since the UUID matched, we need to grab existing comment info and update it.
@@ -406,6 +413,7 @@ public class ViewDocFragment extends Fragment {
                             ((StartTheReview) getActivity()).CommentsListView.setAdapter(adapter);
                         }
                     } catch (PDFNetException e) {
+                        Log.d(TAG, "AnnotationsModified: ERROR: Something went wrong when modifying comments.");
                         e.printStackTrace();
                     }
                 }

@@ -166,6 +166,9 @@ public class StartTheReview extends AppCompatActivity {
         SaveChanges.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Change to the view tab so that the annotation changes can be saves.
+                selectTab(0); // View Tab
+
                 // Since we are saving changes, prevent the user from interacting with the activity during the upload.
                 version_dropdown.setEnabled(false);
                 StartReviewTitle.setEnabled(false);
@@ -412,17 +415,31 @@ public class StartTheReview extends AppCompatActivity {
                         if (UpdatedComments.get(i).CommentNumber().equals(firebase_comment_number)) {
                             updated_comment_exists = true;
                             UpdatedComments.get(i).setComment(updated_comment);
+                            Log.w(TAG, "EditCommentDialog: Comment already exists in Updated Comments list. Updating comment: " + updated_comment + " (#" + String.valueOf(i) + ")");
                         }
                     }
 
                     // If instead, their is not existing comment payload, add it to the comments array.
                     if (!updated_comment_exists) {
-                        String empty_date = "";
-                        SingleComment new_comment = new SingleComment(
-                                firebase_comment_number, commenter_fullname, commenter_username,
-                                updated_comment, empty_date);
-                        new_comment.setCreation_date();
-                        UpdatedComments.add(new_comment);
+                        // You really only need the comment_number and we can parse list_of_comments for the comment.
+                        Log.d(TAG, "EditCommentDialog: Comment doesn't exist Updated Comments list! Searching List of Comments for the comment we need to modify.");
+                        boolean found_comment_to_modify = false;
+                        for (int i = 0; i < listOfComments.size(); ++i) {
+                            if (listOfComments.get(i).CommentNumber().equals(firebase_comment_number)) {
+                                found_comment_to_modify = true;
+                                Log.d(TAG, "EditCommentDialog: Comment #" + listOfComments.get(i).CommentNumber() + " is the comment we are updating.");
+                                SingleComment new_comment = listOfComments.get(i);
+                                new_comment.setComment(updated_comment);
+                                new_comment.setCreation_date();
+
+                                UpdatedComments.add(new_comment);
+                                Log.d(TAG, "EditCommentDialog: Modifying the original comment with new text: " + updated_comment);
+                                break;
+                            }
+                        }
+                        if (!found_comment_to_modify) {
+                            Log.e(TAG, "EditCommentDialog: No comments were found that could be modified because comment # doesn't exist!");
+                        }
                     }
                 }
             }
@@ -491,7 +508,7 @@ public class StartTheReview extends AppCompatActivity {
          *  Update comments.
          ******************/
         for (int idx = 0; idx < updated_comments.size(); ++idx) {
-            SingleComment updated_comment = new_comments.get(idx);
+            SingleComment updated_comment = updated_comments.get(idx);
             String comment_number = updated_comment.CommentNumber();
             String comment_details = updated_comment.Comment();
             String comment_timestamp = updated_comment.CreationDate();
@@ -503,7 +520,7 @@ public class StartTheReview extends AppCompatActivity {
             comments_db.child(comment_number).child("timestamp").setValue(comment_timestamp);
             comments_db.child(comment_number).child("username").setValue(comment_username);
             comments_db.child(comment_number).child("annotation_id").setValue(annotation_id);
-            Log.d(TAG, "UpdateFirebaseComments: Updated: updated comment # " + comment_number + " to Review Version=" + version);
+            Log.d(TAG, "UpdateFirebaseComments: UpdateComment: added comment # " + comment_number + " (ID: " + annotation_id + ") to Review Version=" + version);
         }
         /*******************
          *  New comments.
@@ -521,7 +538,7 @@ public class StartTheReview extends AppCompatActivity {
             comments_db.child(comment_number).child("timestamp").setValue(comment_timestamp);
             comments_db.child(comment_number).child("username").setValue(comment_username);
             comments_db.child(comment_number).child("annotation_id").setValue(annotation_id);
-            Log.d(TAG, "UpdateFirebaseComments: NewComment: added comment # " + comment_number + " to Review Version=" + version);
+            Log.d(TAG, "UpdateFirebaseComments: NewComment: added comment # " + comment_number + " (ID: " + annotation_id + ") to Review Version=" + version);
         }
     }
 
